@@ -1,0 +1,109 @@
+{
+  "title": "مدیریت بحران‌ها",
+  "subtitle": "ثبت، پایش و هماهنگی پاسخ به بحران‌ها",
+  "actions": {
+    "create": "تعریف بحران جدید",
+    "edit": "ویرایش بحران",
+    "submit": "ثبت بحران",
+    "update": "ذخیره تغییرات",
+    "cancel": "انصراف",
+    "delete": "حذف",
+    "viewMap": "نمایش در نقشه",
+    "deactivate": "غیرفعال‌کردن",
+    "activate": "فعال‌کردن",
+    "clearMap": "حذف موقعیت نقشه"
+  },
+  "table": {
+    "title": "عنوان",
+    "type": "نوع بحران",
+    "location": "موقعیت",
+    "severity": "شدت",
+    "status": "وضعیت",
+    "occurredAt": "تاریخ وقوع",
+    "needs": "نیازمندی‌ها",
+    "map": "نقشه",
+    "actions": "عملیات"
+  },
+  "form": {
+    "sections": {
+      "basic": "اطلاعات پایه",
+      "location": "موقعیت بحران",
+      "map": "نشان‌گذاری روی گوگل‌مپ (اختیاری)",
+      "needs": "نیازمندی‌ها و توضیحات"
+    },
+    "fields": {
+      "title": "عنوان بحران",
+      "disasterType": "نوع بحران",
+      "severity": "شدت بحران",
+      "occurredAt": "تاریخ وقوع",
+      "province": "استان",
+      "city": "شهر",
+      "location": "آدرس / محل دقیق",
+      "googleMapsUrl": "لینک گوگل‌مپ",
+      "latitude": "عرض جغرافیایی (Lat)",
+      "longitude": "طول جغرافیایی (Lng)",
+      "affectedPopulation": "جمعیت آسیب‌دیده (تخمینی)",
+      "description": "شرح بحران",
+      "needs": "نیازمندی‌های فوری",
+      "otherNeeds": "نیازمندی سفارشی"
+    },
+    "hints": {
+      "title": "مثال: زلزله — منطقه ۵ تهران",
+      "location": "محله، خیابان یا نقطه مرجع",
+      "googleMapsUrl": "مثال: https://maps.google.com/...",
+      "mapPicker": "برای انتخاب موقعیت، روی نقشه کلیک کنید. مختصات به‌صورت خودکار ثبت می‌شود.",
+      "description": "وضعیت فعلی، خسارات اولیه و اولویت‌های پاسخ",
+      "needs": "نیازهای فوری را انتخاب کنید",
+      "otherNeeds": "نیازمندی را بنویسید و Enter بزنید یا دکمه افزودن را بزنید"
+    }
+  },
+  "types": {
+    "earthquake": "زلزله",
+    "flood": "سیل",
+    "fire": "آتش‌سوزی",
+    "storm": "طوفان",
+    "landslide": "رانش زمین",
+    "epidemic": "همه‌گیری",
+    "drought": "خشکسالی",
+    "industrial": "صنعتی / شیمیایی",
+    "other": "سایر"
+  },
+  "severity": {
+    "low": "کم",
+    "medium": "متوسط",
+    "high": "بالا",
+    "critical": "بحرانی"
+  },
+  "status": {
+    "active": "فعال",
+    "inactive": "غیرفعال",
+    "resolved": "رفع‌شده",
+    "archived": "بایگانی"
+  },
+  "needs": {
+    "rescue": "نجات",
+    "medical": "پزشکی",
+    "food": "غذا",
+    "water": "آب",
+    "shelter": "اسکان",
+    "clothing": "پوشاک",
+    "transport": "حمل‌ونقل",
+    "volunteers": "نیروی داوطلب",
+    "equipment": "تجهیزات",
+    "psychosocial": "حمایت روانی",
+    "other": "سایر نیازمندی‌ها"
+  },
+  "messages": {
+    "createSuccess": "بحران جدید با موفقیت ثبت شد.",
+    "createError": "ثبت بحران با خطا مواجه شد.",
+    "updateError": "ویرایش بحران با خطا مواجه شد.",
+    "locationRequired": "حداقل یکی از فیلدهای موقعیت (استان، شهر یا آدرس) الزامی است.",
+    "invalidCoordinates": "مختصات واردشده معتبر نیست. عرض بین 90 تا 90- و طول بین 180 تا 180- باشد.",
+    "otherNeedsRequired": "حداقل یک نیازمندی سفارشی وارد کنید.",
+    "confirmDelete": "از حذف بحران «{{title}}» مطمئن هستید؟"
+  },
+  "stats": {
+    "total": "کل بحران‌ها",
+    "active": "بحران‌های فعال"
+  }
+}

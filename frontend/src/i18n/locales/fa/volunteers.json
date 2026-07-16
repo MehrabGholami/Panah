@@ -1,0 +1,70 @@
+{
+  "title": "درخواست‌های مأموریت",
+  "subtitle": "بررسی و تأیید درخواست‌های شرکت داوطلبان در مأموریت‌ها.",
+  "status": {
+    "pending_approval": "در انتظار",
+    "registered": "ثبت‌شده",
+    "active": "فعال",
+    "rejected": "رد‌شده",
+    "inactive": "غیرفعال"
+  },
+  "fields": {
+    "fullName": "نام کامل",
+    "city": "شهر",
+    "skills": "مهارت‌ها",
+    "registeredAt": "تاریخ ثبت‌نام",
+    "nationalId": "کد ملی",
+    "bio": "درباره داوطلب",
+    "education": "تحصیلات",
+    "occupation": "شغل",
+    "interests": "علاقه‌مندی‌ها",
+    "address": "آدرس",
+    "bloodType": "گروه خونی",
+    "languages": "زبان‌ها",
+    "yearsOfExperience": "سال‌های تجربه",
+    "dateOfBirth": "تاریخ تولد",
+    "emergencyContactName": "نام مخاطب اضطراری",
+    "emergencyContactPhone": "شماره مخاطب اضطراری",
+    "medicalConditions": "بیماری زمینه‌ای",
+    "disability": "معلولیت",
+    "availability": "دسترسی زمانی"
+  },
+  "sections": {
+    "contact": "اطلاعات تماس",
+    "profile": "اطلاعات پروفایل",
+    "professional": "تحصیلات و شغل",
+    "health": "سلامت",
+    "emergency": "مخاطب اضطراری",
+    "availability": "زمان‌های در دسترس",
+    "skills": "مهارت‌ها"
+  },
+  "availability": {
+    "weekdays": "روزهای هفته",
+    "weekends": "آخر هفته",
+    "shifts": "شیفت‌ها",
+    "morning": "صبح",
+    "afternoon": "بعدازظهر",
+    "evening": "شب",
+    "yes": "بله",
+    "no": "خیر"
+  },
+  "missionApplications": {
+    "title": "درخواست‌های شرکت در مأموریت",
+    "subtitle": "روی هر ردیف کلیک کنید تا جزئیات داوطلب و پیام را ببینید. درخواست‌ها را تأیید، رد یا در لیست انتظار قرار دهید.",
+    "search": "جستجو",
+    "searchPlaceholder": "نام داوطلب، ایمیل، تلفن یا عنوان مأموریت",
+    "emptySearch": "درخواستی با این جستجو یافت نشد.",
+    "detailTitle": "جزئیات درخواست",
+    "mission": "مأموریت",
+    "volunteer": "داوطلب",
+    "message": "پیام داوطلب",
+    "noMessage": "پیامی ثبت نشده است.",
+    "reviewNote": "یادداشت بررسی",
+    "date": "تاریخ درخواست",
+    "empty": "درخواستی برای بررسی وجود ندارد."
+  },
+  "detail": {
+    "title": "پروفایل داوطلب",
+    "years": "{{count}} سال"
+  }
+}

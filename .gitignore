@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.sqlite3
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!environment/.env.*.example
+
+# Docker
+*.log
+
+# Project data
+logs/*
+!logs/.gitkeep
+media/*
+!media/.gitkeep
+database/backups/*
+!database/backups/.gitkeep
+static/*
+!static/.gitkeep
+
+# IDE / local agent
+.idea/
+.vscode/
+.cursor/
+*.swp
+.DS_Store
+
+# Backend collected static / local artifacts
+backend/src/staticfiles/
+*.pyc
+
+# SSL
+*.pem
+*.key
+*.crt

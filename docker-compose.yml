@@ -1,0 +1,196 @@
+services:
+  volunteer-management-postgres:
+    image: postgres:17-alpine
+    container_name: volunteer-management-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-volunteer_management}
+      POSTGRES_USER: ${POSTGRES_USER:-volunteer_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-volunteer_pass}
+    volumes:
+      - volunteer-management-postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - volunteer-management-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-volunteer_user} -d ${POSTGRES_DB:-volunteer_management}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  volunteer-management-redis:
+    image: redis:7-alpine
+    container_name: volunteer-management-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - volunteer-management-redis-data:/data
+    networks:
+      - volunteer-management-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  volunteer-management-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: volunteer-management-backend
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        sed -i 's/\r$//' /app/entrypoint.sh
+        exec /app/entrypoint.sh python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - ./backend:/app
+      - ./media:/app/media
+      - ./static:/app/staticfiles
+      - ./logs:/var/log/app
+    depends_on:
+      volunteer-management-postgres:
+        condition: service_healthy
+      volunteer-management-redis:
+        condition: service_healthy
+    networks:
+      - volunteer-management-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  volunteer-management-celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: volunteer-management-celery
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        sed -i 's/\r$//' /app/entrypoint.sh
+        exec /app/entrypoint.sh celery -A config worker -l info
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - ./backend:/app
+      - ./media:/app/media
+      - ./logs:/var/log/app
+    depends_on:
+      volunteer-management-backend:
+        condition: service_healthy
+    networks:
+      - volunteer-management-net
+
+  volunteer-management-celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: volunteer-management-celery-beat
+    restart: unless-stopped
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        sed -i 's/\r$//' /app/entrypoint.sh
+        exec /app/entrypoint.sh celery -A config beat -l info
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.development
+    volumes:
+      - ./backend:/app
+    depends_on:
+      volunteer-management-redis:
+        condition: service_healthy
+    networks:
+      - volunteer-management-net
+
+  volunteer-management-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: volunteer-management-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+      VITE_APP_NAME: ${VITE_APP_NAME:-پناه}
+    volumes:
+      - ./frontend:/app
+      - C:/Users/Mehrab/Desktop/meem:/meem:ro
+      - /app/node_modules
+    networks:
+      - volunteer-management-net
+
+  volunteer-management-mailhog:
+    image: mailhog/mailhog:latest
+    container_name: volunteer-management-mailhog
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - volunteer-management-net
+
+  volunteer-management-pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: volunteer-management-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@volunteer.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - volunteer-management-pgadmin-data:/var/lib/pgadmin
+      - ./infrastructure/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - "5050:80"
+    depends_on:
+      volunteer-management-postgres:
+        condition: service_healthy
+    networks:
+      - volunteer-management-net
+
+  volunteer-management-nginx:
+    image: nginx:alpine
+    container_name: volunteer-management-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infrastructure/nginx/snippets:/etc/nginx/snippets:ro
+      - ./static:/var/www/static:ro
+      - ./media:/var/www/media:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - volunteer-management-backend
+      - volunteer-management-frontend
+    networks:
+      - volunteer-management-net
+    healthcheck:
+      test: ["CMD-SHELL", "pidof nginx || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  volunteer-management-net:
+    driver: bridge
+    name: volunteer-management-net
+
+volumes:
+  volunteer-management-postgres-data:
+  volunteer-management-redis-data:
+  volunteer-management-pgadmin-data:

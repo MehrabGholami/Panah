@@ -1,0 +1,93 @@
+{
+  "title": "کاربران",
+  "subtitle": "فهرست ثبت‌نام‌کنندگان، ارسال پیام و مدیریت دسترسی ورود به سامانه",
+  "searchPlaceholder": "نام، ایمیل یا تلفن",
+  "advancedSearch": "جستجوی پیشرفته",
+  "applyFilters": "اعمال فیلتر",
+  "clearFilters": "پاک کردن فیلترها",
+  "activeFilters": "{{count}} فیلتر فعال",
+  "role": "نقش",
+  "allRoles": "همه نقش‌ها",
+  "city": "شهر محل زندگی",
+  "cityPlaceholder": "مثلاً تهران",
+  "skill": "مهارت",
+  "allSkills": "همه مهارت‌ها",
+  "accessStatus": "وضعیت ورود",
+  "allStatuses": "همه",
+  "allowed": "مجاز",
+  "blocked": "مسدود",
+  "roles": {
+    "admin": "مدیر اصلی",
+    "coordinator": "هماهنگ‌کننده",
+    "volunteer": "داوطلب"
+  },
+  "table": {
+    "fullName": "نام کامل",
+    "email": "ایمیل",
+    "phone": "تلفن",
+    "nationalId": "کد ملی",
+    "roles": "نقش‌ها",
+    "status": "وضعیت",
+    "registeredAt": "تاریخ ثبت‌نام",
+    "actions": "عملیات"
+  },
+  "actions": {
+    "exportCsv": "خروجی CSV",
+    "block": "مسدود کردن",
+    "unblock": "فعال‌سازی",
+    "systemAdmin": "مدیر سیستم",
+    "sendMessage": "ارسال پیام"
+  },
+  "message": {
+    "title": "ارسال پیام به کاربر",
+    "to": "گیرنده: {{name}}",
+    "body": "متن پیام",
+    "bodyPlaceholder": "پیام خود را بنویسید...",
+    "required": "عنوان و متن پیام الزامی است.",
+    "success": "پیام برای «{{name}}» ارسال شد و اعلان برای کاربر فعال شد.",
+    "openConversation": "مشاهده گفتگو"
+  },
+  "export": {
+    "title": "خروجی CSV کاربران",
+    "filename": "users.csv",
+    "subtitle": "ابتدا کاربران را فیلتر کنید، سپس ستون‌های خروجی را انتخاب کنید.",
+    "stepFilter": "فیلتر کاربران",
+    "stepColumns": "انتخاب ستون‌ها",
+    "filterTitle": "گام ۱ — فیلتر",
+    "filterHint": "بر اساس شهر، مهارت، نقش یا وضعیت محدود کنید.",
+    "columnsTitle": "گام ۲ — ستون‌ها",
+    "columnsHint": "از میان {{count}} کاربر منطبق، ستون‌های خروجی را انتخاب کنید.",
+    "matchCount": "{{count}} کاربر با این فیلترها پیدا شد",
+    "filterRequired": "حداقل یک فیلتر را برای خروجی مشخص کنید.",
+    "noMatches": "با این فیلترها کاربری یافت نشد.",
+    "selectColumn": "حداقل یک ستون را انتخاب کنید.",
+    "failed": "خروجی CSV ایجاد نشد. دوباره تلاش کنید.",
+    "next": "ادامه و انتخاب ستون‌ها",
+    "back": "بازگشت به فیلتر",
+    "download": "دانلود CSV",
+    "preparing": "در حال آماده‌سازی..."
+  },
+  "columns": {
+    "id": "شناسه",
+    "fullName": "نام کامل",
+    "email": "ایمیل",
+    "phone": "تلفن",
+    "nationalId": "کد ملی",
+    "city": "شهر",
+    "skills": "مهارت‌ها",
+    "roles": "نقش‌ها",
+    "isActive": "وضعیت ورود",
+    "isApproved": "تأیید حساب",
+    "createdAt": "تاریخ ثبت‌نام"
+  },
+  "stats": {
+    "total": "کل کاربران",
+    "active": "کاربران مجاز",
+    "blocked": "کاربران مسدود"
+  },
+  "empty": "کاربری یافت نشد",
+  "blockConfirmTitle": "منع ورود کاربر",
+  "unblockConfirmTitle": "فعال‌سازی ورود کاربر",
+  "blockConfirmMessage": "آیا از مسدود کردن ورود «{{name}}» به سامانه اطمینان دارید؟",
+  "unblockConfirmMessage": "آیا از فعال‌سازی ورود «{{name}}» اطمینان دارید؟"
+}

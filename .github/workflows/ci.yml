@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: volunteer_management
+          POSTGRES_USER: volunteer_user
+          POSTGRES_PASSWORD: volunteer_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U volunteer_user -d volunteer_management"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install backend dependencies
+        working-directory: backend
+        run: pip install ".[dev]"
+      - name: Lint
+        working-directory: backend
+        run: ruff check src
+      - name: Django check
+        working-directory: backend
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: volunteer_management
+          POSTGRES_USER: volunteer_user
+          POSTGRES_PASSWORD: volunteer_pass
+          REDIS_URL: redis://localhost:6379/0
+        run: python manage.py check
+      - name: Tests
+        working-directory: backend
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: volunteer_management
+          POSTGRES_USER: volunteer_user
+          POSTGRES_PASSWORD: volunteer_pass
+          REDIS_URL: redis://localhost:6379/0
+        run: pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Build
+        working-directory: frontend
+        run: npm run build

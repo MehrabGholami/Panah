@@ -1,0 +1,34 @@
+const permissionLabels: Record<string, string> = {
+  'volunteers.view': 'مشاهده داوطلبان',
+  'volunteers.create': 'ایجاد داوطلب',
+  'volunteers.approve': 'تأیید داوطلب',
+  'volunteers.update': 'ویرایش داوطلب',
+  'skills.view': 'مشاهده مهارت‌ها',
+  'skills.manage': 'مدیریت مهارت‌ها',
+  'disasters.view': 'مشاهده بحران‌ها',
+  'disasters.create': 'ایجاد بحران',
+  'disasters.update': 'ویرایش بحران',
+  'missions.view': 'مشاهده مأموریت‌ها',
+  'missions.create': 'ایجاد مأموریت',
+  'missions.assign': 'تخصیص مأموریت',
+  'missions.apply': 'درخواست شرکت در مأموریت',
+  'assignments.view': 'مشاهده تکالیف',
+  'assignments.manage': 'مدیریت تکالیف',
+  'assignments.accept': 'پذیرش تکلیف',
+  'assignments.decline': 'رد تکلیف',
+  'reports.view': 'مشاهده گزارش‌ها',
+  'reports.submit': 'ارسال گزارش',
+  'notifications.view': 'مشاهده اعلان‌ها',
+  'tickets.view': 'مشاهده تیکت‌ها',
+  'tickets.create': 'ایجاد تیکت',
+  'tickets.reply': 'پاسخ به تیکت',
+  'dashboard.view': 'مشاهده داشبورد',
+  'audit.view': 'مشاهده لاگ ممیزی',
+  'accounts.manage_users': 'مدیریت کاربران',
+  'accounts.view_users': 'مشاهده کاربران',
+  'accounts.manage_roles': 'مدیریت نقش‌ها',
+};
+
+export function getPermissionLabel(codename: string): string {
+  return permissionLabels[codename] ?? codename;
+}

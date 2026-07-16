@@ -1,0 +1,82 @@
+{
+  "title": "داشبورد",
+  "welcome": "خوش آمدید",
+  "welcomeMainAdmin": "خوش آمدید مدیر اصلی",
+  "welcomeCoordinator": "پنل هماهنگ‌کننده",
+  "subtitle": "نمای کلی عملیات امداد و نجات — داده‌ها با تغییر بحران‌ها و مأموریت‌ها به‌روز می‌شوند.",
+  "coordinatorSubtitle": "خلاصه مأموریت‌ها، درخواست‌ها و کارهای در انتظار شما.",
+  "volunteerSubtitle": "خلاصه وضعیت مأموریت‌ها، درخواست‌ها و اعلان‌های شخصی شما.",
+  "sections": {
+    "overview": "خلاصه وضعیت",
+    "charts": "نمای آماری",
+    "recentNotifications": "آخرین اعلان‌ها",
+    "noNotifications": "اعلانی برای نمایش وجود ندارد."
+  },
+  "errors": {
+    "loadFailed": "بارگذاری اطلاعات داشبورد ناموفق بود."
+  },
+  "actions": {
+    "retry": "تلاش دوباره"
+  },
+  "kpis": {
+    "activeDisasters": "بحران‌های فعال",
+    "inactiveDisasters": "بحران‌های غیرفعال",
+    "openMissions": "مأموریت‌های باز",
+    "missionsInProgress": "مأموریت در حال اجرا",
+    "pendingVolunteers": "داوطلبان در انتظار",
+    "activeVolunteers": "داوطلبان فعال",
+    "activeAssignments": "انتساب‌های فعال",
+    "completedMissions": "مأموریت‌های تکمیل‌شده",
+    "pendingReports": "گزارش‌های در انتظار",
+    "pendingApplications": "درخواست‌های مأموریت",
+    "unreadNotifications": "اعلان‌های خوانده‌نشده",
+    "availableMissions": "مأموریت‌های قابل شرکت",
+    "myApplicationsTotal": "کل درخواست‌های من",
+    "myApplicationsPending": "درخواست‌های در انتظار",
+    "myApplicationsApproved": "درخواست‌های تأییدشده",
+    "myAssignmentsActive": "انتساب‌های فعال من",
+    "myAssignmentsCompleted": "انتساب‌های تکمیل‌شده",
+    "myMissionsInProgress": "مأموریت‌های در حال اجرای من",
+    "myMissionsTotal": "کل مأموریت‌های من",
+    "myMissionsDraft": "پیش‌نویس‌های من",
+    "myMissionsPublished": "منتشرشده‌های من"
+  },
+  "charts": {
+    "disasterStatus": "وضعیت بحران‌ها",
+    "missionStatus": "وضعیت مأموریت‌ها (بحران فعال)",
+    "missionStatusMine": "وضعیت مأموریت‌های من",
+    "volunteerPipeline": "خط داوطلبان",
+    "assignmentStatus": "وضعیت انتساب‌ها",
+    "assignmentStatusMine": "وضعیت انتساب‌های مأموریت‌های من",
+    "activityTrend": "روند ثبت ۷ روز اخیر",
+    "activityTrendMine": "روند مأموریت‌های من (۷ روز)",
+    "myApplicationStatus": "وضعیت درخواست‌های من",
+    "myAssignmentStatus": "وضعیت انتساب‌های من",
+    "noData": "داده‌ای برای نمایش نیست"
+  },
+  "quickActions": {
+    "title": "دسترسی سریع",
+    "disasters": "مدیریت بحران‌ها",
+    "missions": "مأموریت‌ها",
+    "volunteers": "درخواست‌های مأموریت",
+    "notifications": "اعلان‌ها",
+    "availableMissions": "مأموریت‌های موجود",
+    "availableMissionsHint": "مشاهده و ثبت‌نام در مأموریت‌های باز",
+    "myMissions": "مأموریت‌های من",
+    "myMissionsHint": "پیگیری درخواست‌ها و انتساب‌های شما",
+    "missionsHint": "مدیریت و پیگیری مأموریت‌های محول‌شده",
+    "applications": "درخواست‌های مأموریت",
+    "applicationsHint": "بررسی و تأیید درخواست داوطلبان",
+    "notificationsHint": "مشاهده اعلان‌های جدید سامانه",
+    "messagesTickets": "پیام‌ها و تیکت‌ها",
+    "messagesTicketsHint": "گفتگو با پشتیبانی و پیگیری تیکت‌ها",
+    "reports": "گزارش‌ها",
+    "reportsHint": "بررسی گزارش‌های مأموریت",
+    "profile": "پروفایل",
+    "profileHint": "به‌روزرسانی اطلاعات حساب کاربری"
+  },
+  "legend": {
+    "missions": "مأموریت",
+    "disasters": "بحران"
+  }
+}

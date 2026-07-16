@@ -1,0 +1,106 @@
+{
+  "title": "گزارش‌ها",
+  "subtitle": "گزارش‌گیری از مأموریت‌های خاتمه‌یافته و مدیریت گزارش‌های پایانی عملیات",
+  "tabs": {
+    "finishedMissions": "مأموریت‌های خاتمه‌یافته",
+    "missionReports": "گزارش‌های پایانی"
+  },
+  "stats": {
+    "finished": "مأموریت خاتمه‌یافته",
+    "completed": "تکمیل‌شده",
+    "closed": "بسته‌شده",
+    "withReport": "دارای گزارش پایانی"
+  },
+  "filters": {
+    "search": "جستجو در عنوان، بحران یا مکان",
+    "status": "وضعیت مأموریت",
+    "allStatuses": "همه",
+    "completed": "تکمیل‌شده",
+    "closed": "بسته‌شده",
+    "apply": "اعمال",
+    "clear": "پاک کردن"
+  },
+  "table": {
+    "mission": "مأموریت",
+    "disaster": "بحران",
+    "location": "موقعیت",
+    "coordinator": "هماهنگ‌کننده",
+    "status": "وضعیت",
+    "volunteers": "نیروی موردنیاز",
+    "applications": "درخواست‌ها",
+    "assignments": "تخصیص‌ها",
+    "reports": "گزارش‌ها",
+    "updatedAt": "آخرین به‌روزرسانی",
+    "actions": "عملیات",
+    "author": "نویسنده",
+    "content": "خلاصه محتوا",
+    "createdAt": "تاریخ ایجاد"
+  },
+  "actions": {
+    "exportCsv": "خروجی CSV",
+    "viewSummary": "مشاهده خلاصه",
+    "createReport": "ثبت گزارش پایانی",
+    "submitReport": "ارسال برای بررسی",
+    "reviewReport": "تأیید بررسی",
+    "openMission": "مشاهده مأموریت"
+  },
+  "export": {
+    "title": "خروجی CSV مأموریت‌های خاتمه‌یافته",
+    "filename": "finished-missions-report.csv"
+  },
+  "columns": {
+    "title": "عنوان مأموریت",
+    "disaster": "بحران",
+    "status": "وضعیت",
+    "priority": "اولویت",
+    "location": "موقعیت",
+    "coordinator": "هماهنگ‌کننده",
+    "requiredVolunteers": "نیروی موردنیاز",
+    "applicationsTotal": "تعداد درخواست‌ها",
+    "applicationsApproved": "درخواست‌های تأییدشده",
+    "assignmentsTotal": "تعداد تخصیص‌ها",
+    "assignmentsCompleted": "تخصیص‌های تکمیل‌شده",
+    "reportsTotal": "تعداد گزارش‌ها",
+    "startTime": "شروع",
+    "endTime": "پایان",
+    "updatedAt": "آخرین به‌روزرسانی"
+  },
+  "status": {
+    "completed": "تکمیل‌شده",
+    "closed": "بسته‌شده",
+    "draft": "پیش‌نویس",
+    "submitted": "ارسال‌شده",
+    "reviewed": "بررسی‌شده"
+  },
+  "priority": {
+    "low": "کم",
+    "medium": "متوسط",
+    "high": "بالا",
+    "critical": "بحرانی"
+  },
+  "summary": {
+    "title": "خلاصه گزارش مأموریت",
+    "overview": "نمای کلی",
+    "applications": "درخواست‌های داوطلبی",
+    "assignments": "تخصیص نیرو",
+    "reports": "گزارش‌های پایانی",
+    "emptyApps": "درخواستی ثبت نشده است.",
+    "emptyAssignments": "تخصیصی ثبت نشده است.",
+    "emptyReports": "گزارش پایانی ثبت نشده است.",
+    "createPrompt": "برای این مأموریت گزارش پایانی بنویسید و در صورت آمادگی ارسال کنید."
+  },
+  "createDialog": {
+    "title": "ثبت گزارش پایانی",
+    "content": "متن گزارش",
+    "contentPlaceholder": "خلاصه عملیات، دستاوردها، چالش‌ها و پیشنهادها را بنویسید...",
+    "submit": "ثبت به‌صورت پیش‌نویس",
+    "saveAndSubmit": "ثبت و ارسال"
+  },
+  "emptyFinished": "مأموریت خاتمه‌یافته‌ای یافت نشد.",
+  "emptyReports": "گزارش پایانی ثبت نشده است.",
+  "messages": {
+    "createSuccess": "گزارش با موفقیت ثبت شد.",
+    "submitSuccess": "گزارش برای بررسی ارسال شد.",
+    "reviewSuccess": "گزارش بررسی و تأیید شد."
+  }
+}

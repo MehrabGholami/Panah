@@ -1,0 +1,14 @@
+# Optional local overrides — copy to docker-compose.override.yml
+services:
+  volunteer-management-backend:
+    ports:
+      - "8000:8000"
+
+  volunteer-management-frontend:
+    ports:
+      - "5173:5173"
+
+  volunteer-management-mailhog:
+    ports:
+      - "8025:8025"
+      - "1025:1025"

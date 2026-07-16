@@ -1,0 +1,58 @@
+{
+  "title": "پروفایل من",
+  "subtitle": "اطلاعات پروفایل خود را تکمیل کنید. همه فیلدهای اضافی اختیاری هستند.",
+  "sections": {
+    "basic": "اطلاعات پایه",
+    "volunteer": "اطلاعات داوطلبی",
+    "professional": "تحصیلات و شغل",
+    "personal": "اطلاعات تکمیلی",
+    "health": "بیماری زمینه‌ای و معلولیت",
+    "emergency": "مخاطب اضطراری"
+  },
+  "fields": {
+    "avatar": "تصویر پروفایل",
+    "email": "ایمیل",
+    "firstName": "نام",
+    "lastName": "نام خانوادگی",
+    "phone": "شماره تماس",
+    "nationalId": "کد ملی",
+    "city": "شهر",
+    "bio": "درباره من",
+    "education": "تحصیلات",
+    "occupation": "شغل",
+    "interests": "علاقه‌مندی‌ها",
+    "address": "آدرس",
+    "bloodType": "گروه خونی",
+    "languages": "زبان‌ها",
+    "yearsOfExperience": "سال‌های تجربه",
+    "dateOfBirth": "تاریخ تولد",
+    "emergencyContactName": "نام مخاطب اضطراری",
+    "emergencyContactPhone": "شماره مخاطب اضطراری",
+    "medicalConditions": "بیماری زمینه‌ای",
+    "disability": "معلولیت"
+  },
+  "hints": {
+    "avatarFormats": "فرمت مجاز",
+    "avatarMaxSize": "حداکثر ۳ مگابایت",
+    "optional": "اختیاری",
+    "notSelected": "انتخاب نشده",
+    "interests": "مثال: امداد و نجات، آتش‌نشانی، پرستاری",
+    "medicalConditions": "در صورت وجود، بیماری‌های زمینه‌ای خود را ذکر کنید",
+    "disability": "در صورت وجود، نوع و میزان معلولیت را ذکر کنید"
+  },
+  "actions": {
+    "uploadAvatar": "انتخاب تصویر",
+    "save": "ذخیره تغییرات"
+  },
+  "messages": {
+    "saveSuccess": "پروفایل با موفقیت ذخیره شد.",
+    "completeProfileInvite": "با تکمیل حداقل ۵۰ درصد از فیلدهای پروفایل و ذخیره تغییرات، از دفعات بعد پس از ورود مستقیم به داشبورد هدایت می‌شوید.",
+    "completeProfileThanks": "از همکاری شما سپاس‌گزاریم :)",
+    "completionProgress": "پیشرفت تکمیل پروفایل: {{percent}}٪",
+    "completionReached": "آماده ورود به داشبورد",
+    "completionRemaining": "{{remaining}}٪ تا هدف",
+    "avatarSuccess": "تصویر پروفایل با موفقیت بارگذاری شد.",
+    "avatarInvalidType": "فقط تصاویر JPG، PNG و WebP مجاز هستند.",
+    "avatarTooLarge": "حجم تصویر باید کمتر از ۳ مگابایت باشد."
+  }
+}

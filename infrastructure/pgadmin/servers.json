@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Panah PostgreSQL",
+      "Group": "Servers",
+      "Host": "volunteer-management-postgres",
+      "Port": 5432,
+      "MaintenanceDB": "volunteer_management",
+      "Username": "volunteer_user",
+      "SSLMode": "prefer",
+      "PassFile": "/pgpass"
+    }
+  }
+}

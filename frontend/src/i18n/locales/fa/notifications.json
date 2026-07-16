@@ -1,0 +1,44 @@
+{
+  "title": "اعلان‌ها",
+  "subtitle": {
+    "unread": "{{count}} اعلان خوانده‌نشده",
+    "allRead": "همه اعلان‌ها خوانده شده‌اند"
+  },
+  "filters": {
+    "all": "همه",
+    "unread": "خوانده‌نشده",
+    "missionApplication": "درخواست مأموریت",
+    "assignment": "تخصیص",
+    "mission": "مأموریت",
+    "ticket": "پیام / تیکت",
+    "volunteer": "داوطلب"
+  },
+  "actions": {
+    "markRead": "علامت به‌عنوان خوانده‌شده",
+    "markAllRead": "همه را خواندم",
+    "open": "مشاهده",
+    "openMissionApplications": "بررسی درخواست‌ها",
+    "openAvailableMissions": "مأموریت‌های موجود",
+    "openMyMissions": "مأموریت‌های من",
+    "openTicket": "مشاهده گفتگو",
+    "openUsers": "کاربران",
+    "openMission": "مشاهده مأموریت"
+  },
+  "status": {
+    "new": "جدید",
+    "read": "خوانده‌شده"
+  },
+  "types": {
+    "mission_application": "درخواست مأموریت",
+    "assignment": "تخصیص",
+    "ticket": "پیام / تیکت",
+    "volunteer": "داوطلب",
+    "mission": "مأموریت",
+    "general": "عمومی"
+  },
+  "empty": {
+    "title": "اعلانی وجود ندارد",
+    "unread": "اعلان خوانده‌نشده‌ای ندارید",
+    "hint": "رویدادهای مهم مأموریت، تخصیص، پیام و ثبت‌نام اینجا نمایش داده می‌شوند."
+  }
+}
