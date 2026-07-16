@@ -52,3 +52,7 @@ backend/src/staticfiles/
 *.pem
 *.key
 *.crt
+
+# Celery local schedules
+celerybeat-schedule*
+backend/celerybeat-schedule*
