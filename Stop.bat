@@ -1,25 +1,33 @@
 @echo off
-chcp 65001 >nul 2>&1
 cd /d "%~dp0"
 title Panah Platform - Stop
 
-echo.
-echo  Stopping the platform...
-echo.
-
-docker compose down
-if errorlevel 1 (
-    echo.
-    echo  [ERROR] Failed to stop the platform.
+where powershell >nul 2>&1
+if not errorlevel 1 (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0Stop.ps1"
+    set EXITCODE=%ERRORLEVEL%
+    if not "%EXITCODE%"=="0" (
+        echo.
+        echo  [ERROR] Stop failed.
+        echo.
+        pause
+        exit /b %EXITCODE%
+    )
     pause
-    exit /b 1
+    exit /b 0
 )
 
+docker compose down
+set EXITCODE=%ERRORLEVEL%
+if not "%EXITCODE%"=="0" (
+    echo.
+    echo  [ERROR] Stop failed.
+    echo.
+    pause
+    exit /b %EXITCODE%
+)
 echo.
 echo  Platform stopped.
-echo  (Data and volumes have been preserved)
-echo.
-echo  To start again: Start.bat
 echo.
 pause
 exit /b 0

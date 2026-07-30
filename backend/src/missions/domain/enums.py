@@ -22,3 +22,10 @@ class MissionApplicationStatus(StrEnum):
     APPROVED = "approved"
     REJECTED = "rejected"
     WITHDRAWN = "withdrawn"
+
+
+class MissionCoordinatorRequestStatus(StrEnum):
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    WITHDRAWN = "withdrawn"

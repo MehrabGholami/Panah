@@ -19,8 +19,30 @@ class HealthCheckView(APIView):
             "database": "ok" if db_ok else "error",
             "cache": "ok" if cache_ok else "error",
             "version": getattr(settings, "SPECTACULAR_SETTINGS", {}).get("VERSION", "unknown"),
+            **self._backup_health_fields(),
         }
-        return Response(payload, status=status.HTTP_200_OK if healthy else status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response(
+            payload,
+            status=status.HTTP_200_OK if healthy else status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    @staticmethod
+    def _backup_health_fields():
+        try:
+            from ops.application.services.backup_service import BackupService
+
+            summary = BackupService().get_status_summary()
+            return {
+                "last_backup_status": summary.get("last_backup_status"),
+                "last_backup_at": summary.get("last_backup_at"),
+                "last_backup_age_hours": summary.get("last_backup_age_hours"),
+            }
+        except Exception:
+            return {
+                "last_backup_status": None,
+                "last_backup_at": None,
+                "last_backup_age_hours": None,
+            }
 
     @staticmethod
     def _check_database():

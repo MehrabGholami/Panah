@@ -14,6 +14,12 @@ export type MissionApplicationStatus =
   | 'rejected'
   | 'withdrawn';
 
+export type MissionCoordinatorRequestStatus =
+  | 'submitted'
+  | 'approved'
+  | 'rejected'
+  | 'withdrawn';
+
 export interface MissionRequiredSkill {
   id: string;
   skill_id: string;
@@ -54,6 +60,10 @@ export interface Mission {
   assignments_count?: number;
   user_has_applied?: boolean;
   user_application_status?: MissionApplicationStatus | null;
+  user_coordinator_request_status?: MissionCoordinatorRequestStatus | null;
+  pending_coordinator_requests_count?: number;
+  can_manage?: boolean;
+  is_current_user_coordinator?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -67,6 +77,24 @@ export interface MissionApplication {
   mission_title?: string;
   message?: string;
   status: MissionApplicationStatus;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_note?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MissionCoordinatorRequest {
+  id: string;
+  mission: string;
+  mission_title?: string;
+  disaster_title?: string;
+  requester: string;
+  requester_name?: string;
+  requester_email?: string;
+  current_coordinator_name?: string;
+  message?: string;
+  status: MissionCoordinatorRequestStatus;
   reviewed_by?: string | null;
   reviewed_at?: string | null;
   review_note?: string;

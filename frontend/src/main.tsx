@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import './theme/meemFonts.css';
+import './theme/vazirmatnFonts.css';
 
 document.documentElement.lang = 'fa';
 document.documentElement.dir = 'rtl';

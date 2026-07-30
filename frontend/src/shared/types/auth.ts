@@ -31,6 +31,7 @@ export interface RegisterRequest {
   phone: string;
   first_name: string;
   last_name: string;
+  gender?: 'female' | 'male' | 'unspecified';
   city?: string;
   bio?: string;
   skill_names?: string[];

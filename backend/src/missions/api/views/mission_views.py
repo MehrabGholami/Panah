@@ -8,6 +8,9 @@ from missions.api.serializers.mission_serializers import (
     MissionApplicationCreateSerializer,
     MissionApplicationReviewSerializer,
     MissionApplicationSerializer,
+    MissionAssignCoordinatorSerializer,
+    MissionCoordinatorRequestCreateSerializer,
+    MissionCoordinatorRequestSerializer,
     MissionSerializer,
     MissionVisibilitySerializer,
 )
@@ -17,7 +20,7 @@ from missions.application.services.mission_service import MissionService
 class MissionListCreateView(generics.ListCreateAPIView):
     serializer_class = MissionSerializer
     permission_classes = [IsAuthenticated, HasPermission]
-    filterset_fields = ["status", "disaster", "priority", "is_visible_to_volunteers"]
+    filterset_fields = ["status", "disaster", "priority", "is_visible_to_volunteers", "coordinator"]
     search_fields = ["title", "description", "location", "city", "province"]
     ordering_fields = ["created_at", "start_time", "status", "priority"]
 
@@ -27,6 +30,17 @@ class MissionListCreateView(generics.ListCreateAPIView):
         mine = (params.get("mine") or "").strip().lower()
         if mine in {"1", "true", "yes"}:
             qs = qs.filter(coordinator_id=self.request.user.pk)
+        occurred_after = (params.get("disaster_occurred_after") or "").strip()
+        if occurred_after:
+            from django.db.models import Q
+
+            qs = qs.filter(
+                Q(disaster__occurred_at__date__gte=occurred_after)
+                | Q(
+                    disaster__occurred_at__isnull=True,
+                    disaster__created_at__date__gte=occurred_after,
+                )
+            )
         return qs
 
     def get_required_permission(self):
@@ -103,7 +117,7 @@ class MissionTransitionView(APIView):
 
     def post(self, request, id):
         service = MissionService()
-        mission = getattr(service, self.action_method)(id)
+        mission = getattr(service, self.action_method)(id, actor=request.user)
         return Response(
             MissionSerializer(mission, context={"request": request}).data
         )
@@ -137,7 +151,9 @@ class MissionVisibilityView(APIView):
     def patch(self, request, id):
         serializer = MissionVisibilitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        mission = MissionService().update_visibility(id, **serializer.validated_data)
+        mission = MissionService().update_visibility(
+            id, actor=request.user, **serializer.validated_data
+        )
         return Response(
             MissionSerializer(mission, context={"request": request}).data
         )
@@ -167,7 +183,10 @@ class MissionApplicationListView(generics.ListAPIView):
     required_permission = "missions.create"
 
     def get_queryset(self):
-        return MissionService().list_applications(self.kwargs["id"])
+        service = MissionService()
+        service.get(self.kwargs["id"])
+        service.ensure_can_review_applications(self.request.user)
+        return service.list_applications(self.kwargs["id"])
 
 
 class MissionApplicationApproveView(APIView):
@@ -235,3 +254,97 @@ class MissionApplicationInboxView(generics.ListAPIView):
                 | Q(message__icontains=search)
             ).distinct()
         return qs
+
+
+class MissionRequestCoordinationView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "missions.request_coordinate"
+
+    def post(self, request, id):
+        serializer = MissionCoordinatorRequestCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        coord_request = MissionService().request_coordination(
+            id,
+            request.user,
+            message=serializer.validated_data.get("message", ""),
+        )
+        return Response(
+            MissionCoordinatorRequestSerializer(coord_request).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MissionCoordinatorRequestListView(generics.ListAPIView):
+    serializer_class = MissionCoordinatorRequestSerializer
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "missions.assign"
+
+    def get_queryset(self):
+        return MissionService().list_coordinator_requests(self.kwargs["id"])
+
+
+class MissionCoordinatorRequestInboxView(generics.ListAPIView):
+    serializer_class = MissionCoordinatorRequestSerializer
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "missions.assign"
+
+    def get_queryset(self):
+        from django.db.models import Q
+
+        qs = MissionService().list_inbox_coordinator_requests(self.request.user)
+        search = (self.request.query_params.get("search") or "").strip()
+        if search:
+            qs = qs.filter(
+                Q(requester__first_name__icontains=search)
+                | Q(requester__last_name__icontains=search)
+                | Q(requester__email__icontains=search)
+                | Q(mission__title__icontains=search)
+                | Q(message__icontains=search)
+            ).distinct()
+        return qs
+
+
+class MissionCoordinatorRequestApproveView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "missions.assign"
+
+    def post(self, request, id, request_id):
+        serializer = MissionApplicationReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        coord_request = MissionService().approve_coordinator_request(
+            request_id,
+            request.user,
+            review_note=serializer.validated_data.get("review_note", ""),
+        )
+        return Response(MissionCoordinatorRequestSerializer(coord_request).data)
+
+
+class MissionCoordinatorRequestRejectView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "missions.assign"
+
+    def post(self, request, id, request_id):
+        serializer = MissionApplicationReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        coord_request = MissionService().reject_coordinator_request(
+            request_id,
+            request.user,
+            review_note=serializer.validated_data.get("review_note", ""),
+        )
+        return Response(MissionCoordinatorRequestSerializer(coord_request).data)
+
+
+class MissionAssignCoordinatorView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "missions.assign"
+
+    def post(self, request, id):
+        serializer = MissionAssignCoordinatorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mission = MissionService().assign_coordinator(
+            id,
+            request.user,
+            coordinator_id=serializer.validated_data["coordinator"],
+            review_note=serializer.validated_data.get("review_note", ""),
+        )
+        return Response(MissionSerializer(mission, context={"request": request}).data)

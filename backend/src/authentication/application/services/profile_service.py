@@ -36,7 +36,7 @@ class ProfileService:
         "medical_conditions",
         "disability",
     )
-    VOLUNTEER_FIELDS = ("city", "bio")
+    VOLUNTEER_FIELDS = ("city", "bio", "gender")
 
     def get_user_with_profile(self, user: User) -> User:
         return (

@@ -5,6 +5,7 @@ import {
   Box,
   Divider,
   Link,
+  MenuItem,
   Stack,
   Step,
   StepLabel,
@@ -20,7 +21,7 @@ import { z } from 'zod';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { clearAuthError, register } from '@/app/slices/authSlice';
 import { RegisterProfileInviteCard } from '@/features/auth/components/RegisterProfileInviteCard';
-import { GhostButton, GradientButton, PillBadge, SkillsMultiSelect } from '@/shared/components/ui';
+import { GhostButton, GradientButton, PasswordTextField, PillBadge, SkillsMultiSelect } from '@/shared/components/ui';
 import type { Skill } from '@/shared/types';
 
 const accountSchema = z
@@ -39,6 +40,7 @@ const accountSchema = z
 const profileSchema = z.object({
   first_name: z.string().min(2),
   last_name: z.string().min(2),
+  gender: z.enum(['female', 'male', 'unspecified']),
   city: z.string().optional(),
   bio: z.string().optional(),
 });
@@ -68,7 +70,10 @@ export default function RegisterPage() {
   const [skillsData, setSkillsData] = useState<SkillsForm | null>(null);
 
   const accountForm = useForm<AccountForm>({ resolver: zodResolver(accountSchema) });
-  const profileForm = useForm<ProfileForm>({ resolver: zodResolver(profileSchema) });
+  const profileForm = useForm<ProfileForm>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: { gender: 'unspecified' },
+  });
   const skillsForm = useForm<SkillsForm>({
     resolver: zodResolver(skillsSchema),
     defaultValues: { skill_names: [], custom_skill_names: [] },
@@ -156,6 +161,7 @@ export default function RegisterPage() {
         phone: accountData.phone,
         first_name: profileData.first_name,
         last_name: profileData.last_name,
+        gender: profileData.gender,
         city: profileData.city,
         bio: profileData.bio,
         skill_names: skillsData.skill_names,
@@ -228,20 +234,20 @@ export default function RegisterPage() {
             helperText={accountForm.formState.errors.phone ? t('validation.phone') : undefined}
             {...accountForm.register('phone')}
           />
-          <TextField
+          <PasswordTextField
             label={t('register.password')}
-            type="password"
             size="small"
             fullWidth
+            autoComplete="new-password"
             error={Boolean(accountForm.formState.errors.password)}
             helperText={accountForm.formState.errors.password ? t('validation.minPassword') : undefined}
             {...accountForm.register('password')}
           />
-          <TextField
+          <PasswordTextField
             label={t('register.confirmPassword')}
-            type="password"
             size="small"
             fullWidth
+            autoComplete="new-password"
             error={Boolean(accountForm.formState.errors.confirmPassword)}
             helperText={
               accountForm.formState.errors.confirmPassword
@@ -272,6 +278,22 @@ export default function RegisterPage() {
             error={Boolean(profileForm.formState.errors.last_name)}
             {...profileForm.register('last_name')}
           />
+          <TextField
+            select
+            label={t('register.gender')}
+            size="small"
+            fullWidth
+            error={Boolean(profileForm.formState.errors.gender)}
+            helperText={
+              profileForm.formState.errors.gender ? t('validation.required') : undefined
+            }
+            defaultValue="unspecified"
+            {...profileForm.register('gender')}
+          >
+            <MenuItem value="female">{t('register.genderOptions.female')}</MenuItem>
+            <MenuItem value="male">{t('register.genderOptions.male')}</MenuItem>
+            <MenuItem value="unspecified">{t('register.genderOptions.unspecified')}</MenuItem>
+          </TextField>
 
           <Autocomplete
             options={provinces}
@@ -404,6 +426,10 @@ export default function RegisterPage() {
             <Typography variant="body2" sx={{ mb: 1 }}>
               <strong>{t('register.firstName')}:</strong> {profileData.first_name}{' '}
               {profileData.last_name}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              <strong>{t('register.gender')}:</strong>{' '}
+              {t(`register.genderOptions.${profileData.gender}`)}
             </Typography>
             {profileData.city && (
               <Typography variant="body2" sx={{ mb: 1 }}>

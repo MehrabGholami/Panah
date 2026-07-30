@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from collections import OrderedDict
+
 from django.db.models import Count, Q
 
-from assignments.domain.enums import AssignmentStatus
+from assignments.domain.enums import AssignmentStatus, AssignmentTaskStatus
+from assignments.models import AssignmentTask
 from common.exceptions.api_exceptions import NotFoundError
 from missions.domain.enums import MissionApplicationStatus, MissionStatus
 from missions.models import Mission
@@ -63,6 +66,7 @@ class FinishedMissionReportService:
             .select_related("author")
             .order_by("-created_at")
         )
+        task_payload = self._build_volunteer_tasks(mission)
 
         return {
             "id": str(mission.pk),
@@ -102,6 +106,11 @@ class FinishedMissionReportService:
                 mission.assignments.filter(status=AssignmentStatus.CHECKED_IN.value).count(),
             ),
             "reports_total": getattr(mission, "reports_total", MissionReport.objects.filter(mission=mission).count()),
+            "tasks_total": task_payload["tasks_total"],
+            "tasks_done": task_payload["tasks_done"],
+            "tasks_in_progress": task_payload["tasks_in_progress"],
+            "tasks_not_done": task_payload["tasks_not_done"],
+            "volunteer_tasks": task_payload["volunteer_tasks"],
             "has_submitted_report": any(r.status == ReportStatus.SUBMITTED.value for r in reports)
             or any(r.status == ReportStatus.REVIEWED.value for r in reports),
             "created_at": mission.created_at,
@@ -160,6 +169,62 @@ class FinishedMissionReportService:
             "reports_total": mission.reports_total,
             "created_at": mission.created_at,
             "updated_at": mission.updated_at,
+        }
+
+    def _build_volunteer_tasks(self, mission: Mission) -> dict:
+        tasks = list(
+            AssignmentTask.objects.filter(assignment__mission_id=mission.pk)
+            .select_related("assignment", "assignment__volunteer__user")
+            .order_by("assignment_id", "created_at")[:200]
+        )
+
+        groups: OrderedDict[str, dict] = OrderedDict()
+        tasks_done = 0
+        tasks_in_progress = 0
+        tasks_not_done = 0
+
+        for task in tasks:
+            if task.status == AssignmentTaskStatus.DONE:
+                tasks_done += 1
+            elif task.status == AssignmentTaskStatus.IN_PROGRESS:
+                tasks_in_progress += 1
+            else:
+                tasks_not_done += 1
+
+            assignment = task.assignment
+            key = str(assignment.pk)
+            if key not in groups:
+                volunteer_user = assignment.volunteer.user
+                groups[key] = {
+                    "volunteer_name": self._user_name(volunteer_user),
+                    "volunteer_email": volunteer_user.email,
+                    "assignment_id": key,
+                    "assignment_status": assignment.status,
+                    "tasks_done": 0,
+                    "tasks_total": 0,
+                    "tasks": [],
+                }
+
+            group = groups[key]
+            group["tasks_total"] += 1
+            if task.status == AssignmentTaskStatus.DONE:
+                group["tasks_done"] += 1
+            group["tasks"].append(
+                {
+                    "id": str(task.pk),
+                    "title": task.title,
+                    "description": task.description,
+                    "status": task.status,
+                    "status_updated_at": task.status_updated_at,
+                }
+            )
+
+        return {
+            "tasks_total": len(tasks),
+            "tasks_done": tasks_done,
+            "tasks_in_progress": tasks_in_progress,
+            "tasks_not_done": tasks_not_done,
+            "volunteer_tasks": list(groups.values()),
         }
 
     @staticmethod

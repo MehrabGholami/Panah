@@ -1,3 +1,16 @@
+# Environment / secrets — never commit real credentials
+.env
+.env.*
+!.env.example
+!environment/.env.*.example
+*.pem
+*.key
+*.crt
+credentials.json
+secrets.json
+.aws/
+.gcloud/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -17,12 +30,6 @@ htmlcov/
 node_modules/
 frontend/dist/
 frontend/.vite/
-
-# Environment
-.env
-.env.local
-.env.*.local
-!environment/.env.*.example
 
 # Docker
 *.log
@@ -46,13 +53,10 @@ static/*
 
 # Backend collected static / local artifacts
 backend/src/staticfiles/
+backend/staticfiles/
 *.pyc
-
-# SSL
-*.pem
-*.key
-*.crt
 
 # Celery local schedules
 celerybeat-schedule*
 backend/celerybeat-schedule*
+

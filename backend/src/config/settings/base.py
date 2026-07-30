@@ -2,6 +2,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,6 +20,7 @@ ALLOWED_HOSTS = [
 ]
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     "dashboard",
     "audit_logs",
     "tickets",
+    "ops.apps.OpsConfig",
 ]
 
 MIDDLEWARE = [
@@ -122,6 +125,18 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR.parent / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_ROOT", str(BASE_DIR.parent / "media")))
+BACKUP_ROOT = Path(os.environ.get("BACKUP_ROOT", "/backups"))
+LOG_DIR = Path(os.environ.get("LOG_DIR", "/var/log/app"))
+try:
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    LOG_DIR = BASE_DIR.parent / "logs"
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+try:
+    BACKUP_ROOT.mkdir(parents=True, exist_ok=True)
+except OSError:
+    BACKUP_ROOT = BASE_DIR.parent / "backups"
+    BACKUP_ROOT.mkdir(parents=True, exist_ok=True)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -188,9 +203,18 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localho
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = TIME_ZONE
+CELERY_TIMEZONE = os.environ.get("CELERY_TIMEZONE", "Asia/Tehran")
+CELERY_ENABLE_UTC = True
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+# Static fallback kept for environments without beat DB yet; DatabaseScheduler owns live schedule.
+CELERY_BEAT_SCHEDULE = {
+    "daily-backup": {
+        "task": "ops.tasks.run_daily_backup",
+        "schedule": crontab(hour=2, minute=0),
+    },
+}
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "localhost")
@@ -218,13 +242,33 @@ LOGGING = {
             "formatter": "verbose",
             "filters": ["correlation_id"],
         },
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "django.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 10,
+            "formatter": "verbose",
+            "filters": ["correlation_id"],
+        },
+        "request_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": str(LOG_DIR / "request.log"),
+            "maxBytes": 10 * 1024 * 1024,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "filters": ["correlation_id"],
+        },
     },
     "root": {
-        "handlers": ["console"],
+        "handlers": ["console", "file"],
         "level": "INFO",
     },
     "loggers": {
-        "django.request": {"level": "WARNING", "propagate": True},
+        "django.request": {
+            "handlers": ["console", "request_file"],
+            "level": "WARNING",
+            "propagate": False,
+        },
         "audit": {"level": "INFO", "propagate": True},
     },
 }
@@ -233,3 +277,111 @@ JWT_BLACKLIST_CACHE_PREFIX = "jwt_blacklist"
 JWT_BLACKLIST_CACHE_TTL = int(os.environ.get("JWT_BLACKLIST_CACHE_TTL", 60 * 60 * 24 * 8))
 
 PERMISSION_CACHE_TTL = int(os.environ.get("PERMISSION_CACHE_TTL", 300))
+
+# Django Admin theme (AdminLTE / Bootstrap — matches modern Jazzmin-style panel)
+JAZZMIN_SETTINGS = {
+    "site_title": "Panah Admin",
+    "site_header": "Panah",
+    "site_brand": "Panah Admin",
+    "welcome_sign": "Welcome to Panah Administration",
+    "copyright": "Panah — Volunteer & Crisis Management System",
+    "search_model": ["accounts.User"],
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {
+            "name": "Backup & Restore",
+            "url": "admin:ops_backuprun_changelist",
+            "permissions": ["ops.view_backuprun"],
+        },
+        {"name": "View site", "url": "/", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "hide_models": [],
+    "order_with_respect_to": [
+        "ops",
+        "ops.BackupRun",
+        "ops.BackupSettings",
+        "accounts",
+        "volunteers",
+        "missions",
+        "assignments",
+        "disasters",
+        "skills",
+        "tickets",
+        "notifications",
+        "audit_logs",
+        "django_celery_beat",
+    ],
+    "custom_links": {
+        "ops": [
+            {
+                "name": "Backup & Restore Hub",
+                "url": "admin:ops_backuprun_changelist",
+                "icon": "fas fa-shield-alt",
+                "permissions": ["ops.view_backuprun"],
+            }
+        ]
+    },
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "accounts": "fas fa-user-shield",
+        "accounts.User": "fas fa-user",
+        "volunteers": "fas fa-hands-helping",
+        "missions": "fas fa-flag",
+        "assignments": "fas fa-tasks",
+        "disasters": "fas fa-exclamation-triangle",
+        "skills": "fas fa-tools",
+        "tickets": "fas fa-ticket-alt",
+        "notifications": "fas fa-bell",
+        "audit_logs": "fas fa-clipboard-list",
+        "ops": "fas fa-hdd",
+        "ops.BackupRun": "fas fa-database",
+        "ops.BackupSettings": "fas fa-cog",
+        "django_celery_beat": "fas fa-clock",
+    },
+    "default_icon_parents": "fas fa-folder",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": True,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
+    "changeform_format": "horizontal_tabs",
+    "language_chooser": False,
+}
+
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-primary",
+    "accent": "accent-primary",
+    "navbar": "navbar-dark navbar-primary",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "default_theme_mode": "auto",
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success",
+    },
+    "actions_sticky_top": True,
+}

@@ -1,0 +1,152 @@
+%% دیاگرام موارد کاربرد سامانه پناه
+%% بازیگران: مدیر سامانه، هماهنگ‌کننده، داوطلب، زمان‌بند سامانه
+%% شکل بیضی برای موارد کاربرد و مرز مستطیلی برای سامانه استفاده شده است
+flowchart LR
+    ADMIN(["مدیر سامانه"])
+    COORD(["هماهنگ‌کننده"])
+    VOL(["داوطلب"])
+    GUEST(["کاربر مهمان"])
+    SCHED(["زمان‌بند سامانه"])
+    MAIL(["سرویس ایمیل"])
+
+    subgraph SYS["مرز سامانه پناه"]
+        direction TB
+
+        subgraph AUTH["حوزه احراز هویت و حساب کاربری"]
+            direction TB
+            UC01(["UC-01 ثبت‌نام داوطلب"])
+            UC02(["UC-02 ورود به سامانه"])
+            UC03(["UC-03 تازه‌سازی توکن دسترسی"])
+            UC04(["UC-04 خروج از سامانه"])
+            UC05(["UC-05 تغییر گذرواژه"])
+            UC06(["UC-06 مدیریت پروفایل شخصی"])
+        end
+
+        subgraph IAM["حوزه کاربران و کنترل دسترسی"]
+            direction TB
+            UC07(["UC-07 مدیریت کاربران"])
+            UC08(["UC-08 تأیید یا رد حساب داوطلب"])
+            UC09(["UC-09 مدیریت نقش‌ها و مجوزها"])
+            UC10(["UC-10 انتساب نقش به کاربر"])
+            UC11(["UC-11 مشاهده گزارش حسابرسی"])
+        end
+
+        subgraph VOLM["حوزه داوطلبان و مهارت‌ها"]
+            direction TB
+            UC12(["UC-12 مدیریت پروفایل داوطلبی"])
+            UC13(["UC-13 ثبت مهارت و سطح تخصص"])
+            UC14(["UC-14 اعلام بازه دسترس‌پذیری"])
+            UC15(["UC-15 جست‌وجو و فیلتر داوطلبان"])
+        end
+
+        subgraph DIS["حوزه رویدادهای بحران"]
+            direction TB
+            UC16(["UC-16 ثبت رویداد بحران"])
+            UC17(["UC-17 ویرایش و تغییر وضعیت رویداد"])
+            UC18(["UC-18 مشاهده فهرست رویدادها"])
+        end
+
+        subgraph MIS["حوزه مأموریت‌ها"]
+            direction TB
+            UC19(["UC-19 ایجاد مأموریت"])
+            UC20(["UC-20 تعیین مهارت‌های مورد نیاز"])
+            UC21(["UC-21 انتشار مأموریت"])
+            UC22(["UC-22 مشاهده مأموریت‌های موجود"])
+            UC23(["UC-23 ارسال درخواست همکاری"])
+            UC24(["UC-24 انصراف از درخواست"])
+            UC25(["UC-25 بررسی و تأیید یا رد درخواست"])
+            UC26(["UC-26 قرار دادن در فهرست انتظار"])
+            UC27(["UC-27 تغییر وضعیت مأموریت"])
+        end
+
+        subgraph ASG["حوزه تخصیص و اجرا"]
+            direction TB
+            UC28(["UC-28 تخصیص داوطلب به مأموریت"])
+            UC29(["UC-29 پذیرش یا رد تخصیص"])
+            UC30(["UC-30 ثبت حضور در محل"])
+            UC31(["UC-31 اعلام پایان کار"])
+        end
+
+        subgraph REP["حوزه گزارش و پایش"]
+            direction TB
+            UC32(["UC-32 ثبت گزارش مأموریت"])
+            UC33(["UC-33 بارگذاری پیوست گزارش"])
+            UC34(["UC-34 بازبینی گزارش"])
+            UC35(["UC-35 مشاهده داشبورد شاخص‌ها"])
+            UC36(["UC-36 خروجی گرفتن از داده‌ها"])
+        end
+
+        subgraph SUP["حوزه اعلان و پشتیبانی"]
+            direction TB
+            UC37(["UC-37 مشاهده و خواندن اعلان‌ها"])
+            UC38(["UC-38 ثبت تیکت پشتیبانی"])
+            UC39(["UC-39 پاسخ به تیکت"])
+            UC40(["UC-40 ارسال اعلان زمان‌بندی‌شده"])
+        end
+    end
+
+    GUEST --> UC01
+    GUEST --> UC02
+
+    VOL --> UC02
+    VOL --> UC04
+    VOL --> UC05
+    VOL --> UC06
+    VOL --> UC12
+    VOL --> UC13
+    VOL --> UC14
+    VOL --> UC22
+    VOL --> UC23
+    VOL --> UC24
+    VOL --> UC29
+    VOL --> UC30
+    VOL --> UC31
+    VOL --> UC37
+    VOL --> UC38
+
+    COORD --> UC02
+    COORD --> UC08
+    COORD --> UC15
+    COORD --> UC16
+    COORD --> UC17
+    COORD --> UC18
+    COORD --> UC19
+    COORD --> UC20
+    COORD --> UC21
+    COORD --> UC25
+    COORD --> UC26
+    COORD --> UC27
+    COORD --> UC28
+    COORD --> UC32
+    COORD --> UC33
+    COORD --> UC35
+    COORD --> UC39
+
+    ADMIN --> UC07
+    ADMIN --> UC08
+    ADMIN --> UC09
+    ADMIN --> UC10
+    ADMIN --> UC11
+    ADMIN --> UC34
+    ADMIN --> UC35
+    ADMIN --> UC36
+    ADMIN --> UC39
+
+    SCHED --> UC40
+    UC40 -.-> MAIL
+    UC25 -.-> MAIL
+    UC28 -.-> MAIL
+
+    UC02 -. "شامل" .-> UC03
+    UC01 -. "شامل" .-> UC12
+    UC23 -. "شامل" .-> UC22
+    UC25 -. "گسترش" .-> UC26
+    UC25 -. "شامل" .-> UC37
+    UC28 -. "شامل" .-> UC37
+    UC32 -. "گسترش" .-> UC33
+    UC07 -. "گسترش" .-> UC10
+
+    classDef actor fill:#E8F1FF,stroke:#2A5DA8,stroke-width:2px,color:#10243F
+    classDef uc fill:#F4FBF7,stroke:#0B6E4F,stroke-width:1px,color:#0A2B20
+    class ADMIN,COORD,VOL,GUEST,SCHED,MAIL actor
+    class UC01,UC02,UC03,UC04,UC05,UC06,UC07,UC08,UC09,UC10,UC11,UC12,UC13,UC14,UC15,UC16,UC17,UC18,UC19,UC20,UC21,UC22,UC23,UC24,UC25,UC26,UC27,UC28,UC29,UC30,UC31,UC32,UC33,UC34,UC35,UC36,UC37,UC38,UC39,UC40 uc

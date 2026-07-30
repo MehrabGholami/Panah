@@ -1,0 +1,16 @@
+flowchart TB
+  subgraph Host
+    NGX[nginx]
+    FE[frontend]
+    BE[backend]
+    CEL[celery+beat]
+    PG[(postgres)]
+    RD[(redis)]
+  end
+  User((Users)) --> NGX
+  NGX --> FE
+  NGX --> BE
+  BE --> PG
+  BE --> RD
+  CEL --> RD
+  CEL --> PG

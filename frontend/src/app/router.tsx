@@ -14,7 +14,9 @@ const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage'));
 const VolunteersPage = lazy(() => import('@/features/volunteers/VolunteersPage'));
 const DisastersPage = lazy(() => import('@/features/disasters/DisastersPage'));
 const MissionsPage = lazy(() => import('@/features/missions/MissionsPage'));
+const CoordinatorMyMissionsPage = lazy(() => import('@/features/missions/CoordinatorMyMissionsPage'));
 const MissionDetailPage = lazy(() => import('@/features/missions/MissionDetailPage'));
+const CoordinatorRequestsPage = lazy(() => import('@/features/missions/CoordinatorRequestsPage'));
 const AvailableMissionsPage = lazy(() => import('@/features/missions/AvailableMissionsPage'));
 const AvailableMissionDetailPage = lazy(() => import('@/features/missions/AvailableMissionDetailPage'));
 const MyMissionsPage = lazy(() => import('@/features/assignments/MyMissionsPage'));
@@ -26,6 +28,7 @@ const ProfilePage = lazy(() => import('@/features/profile/ProfilePage'));
 const RolesPage = lazy(() => import('@/features/admin/RolesPage'));
 const UsersPage = lazy(() => import('@/features/admin/UsersPage'));
 const AuditLogsPage = lazy(() => import('@/features/admin/AuditLogsPage'));
+const OpsBackupPage = lazy(() => import('@/features/admin/OpsBackupPage'));
 
 function PageLoader() {
   return <AppLoadingScreen fullScreen />;
@@ -63,6 +66,26 @@ export function AppRouter() {
               element={
                 <ProtectedRoute roles={['admin', 'coordinator']} permissions={['missions.view']}>
                   <MissionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="missions/mine"
+              element={
+                <ProtectedRoute
+                  roles={['coordinator']}
+                  excludeRoles={['admin']}
+                  permissions={['missions.view']}
+                >
+                  <CoordinatorMyMissionsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="missions/coordinator-requests"
+              element={
+                <ProtectedRoute roles={['admin']} permissions={['missions.assign']}>
+                  <CoordinatorRequestsPage />
                 </ProtectedRoute>
               }
             />
@@ -159,6 +182,14 @@ export function AppRouter() {
               element={
                 <ProtectedRoute roles={['admin']} permissions={['audit.view']}>
                   <AuditLogsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="admin/ops"
+              element={
+                <ProtectedRoute roles={['admin']} permissions={['ops.view_backups']}>
+                  <OpsBackupPage />
                 </ProtectedRoute>
               }
             />

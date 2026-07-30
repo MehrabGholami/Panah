@@ -1,18 +1,18 @@
 #!/bin/bash
-# توقف سامانه (داده‌ها حفظ می‌شوند)
+# Stop platform (volumes/data are preserved)
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
 echo ""
-echo "  در حال توقف سامانه..."
+echo "  Stopping platform..."
 echo ""
 
 docker compose down
 
 echo ""
-echo "  سامانه متوقف شد."
-echo "  (داده‌ها و volumeها حفظ شده‌اند)"
+echo "  Platform stopped."
+echo "  (Data and volumes were preserved.)"
 echo ""
-echo "  برای اجرای مجدد: ./Start.sh"
+echo "  To start again: ./Start.sh"
 echo ""

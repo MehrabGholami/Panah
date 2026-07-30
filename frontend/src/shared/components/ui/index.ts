@@ -17,3 +17,4 @@ export { JalaliDateLocalizationProvider } from './JalaliDateLocalizationProvider
 export { AppLoadingScreen } from './AppLoadingScreen';
 export { TablePagination } from './TablePagination';
 export { ExportCsvDialog } from './ExportCsvDialog';
+export { PasswordTextField } from './PasswordTextField';

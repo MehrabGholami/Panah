@@ -1,6 +1,7 @@
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import AssignmentIndOutlinedIcon from '@mui/icons-material/AssignmentIndOutlined';
 import BadgeOutlinedIcon from '@mui/icons-material/BadgeOutlined';
+import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import {
   Alert,
@@ -18,31 +19,31 @@ import {
   TableRow,
   TextField,
   Typography,
+  alpha,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { GlassCard } from '@/shared/components/ui';
-import type { PaginatedResponse, Permission, Role } from '@/shared/types';
+import type { AccountUser, PaginatedResponse, Permission, Role } from '@/shared/types';
 import { getPermissionLabel } from '@/shared/utils/permissionLabels';
 import { toPersianDigits } from '@/shared/utils/persianDigits';
-type AccountUser = {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  national_id?: string | null;
-  roles: string[];
-  created_at: string;
-};
 
 const roleLabels: Record<string, string> = {
   admin: 'مدیر اصلی',
   coordinator: 'هماهنگ‌کننده',
   volunteer: 'داوطلب',
 };
+
+const VISIBLE_PERMISSIONS = 4;
+const MIN_USER_SEARCH_LENGTH = 2;
+
+function getUserFullName(user: AccountUser) {
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+  return fullName || user.email;
+}
 
 function StatCard({
   title,
@@ -84,8 +85,159 @@ function StatCard({
   );
 }
 
-const VISIBLE_PERMISSIONS = 4;
-const MIN_USER_SEARCH_LENGTH = 2;
+function RoleMembersCard({
+  title,
+  description,
+  users,
+  isLoading,
+  isError,
+  accent,
+  icon,
+}: {
+  title: string;
+  description: string;
+  users: AccountUser[];
+  isLoading: boolean;
+  isError: boolean;
+  accent: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <GlassCard sx={{ p: 2.5, height: '100%' }}>
+      <Stack
+        direction="row"
+        alignItems="flex-start"
+        justifyContent="space-between"
+        spacing={1.5}
+        sx={{ mb: 2 }}
+      >
+        <Stack direction="row" spacing={1.25} alignItems="flex-start" sx={{ minWidth: 0 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: 2,
+              display: 'grid',
+              placeItems: 'center',
+              flexShrink: 0,
+              bgcolor: accent,
+              color: 'primary.main',
+            }}
+          >
+            {icon}
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" fontWeight={800}>
+              {title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {description}
+            </Typography>
+          </Box>
+        </Stack>
+        <Chip
+          size="small"
+          label={`${users.length.toLocaleString('fa-IR')} نفر`}
+          sx={{
+            fontWeight: 700,
+            bgcolor: accent,
+            flexShrink: 0,
+          }}
+        />
+      </Stack>
+
+      {isError && (
+        <Alert severity="error" sx={{ mb: 1.5 }}>
+          بارگذاری فهرست کاربران با خطا مواجه شد.
+        </Alert>
+      )}
+
+      <TableContainer
+        sx={{
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: 'divider',
+          // برای نقش‌هایی مثل "هماهنگ‌کننده" که تعداد ردیف‌ها بیشتر است،
+          // ارتفاع محدودِ کم باعث فعال شدن اسکرولِ اضافه می‌شود. فیت و نمایش بهتر.
+          maxHeight: { xs: 420, sm: 480, md: 560 },
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>نام</TableCell>
+              <TableCell>ایمیل</TableCell>
+              <TableCell>کد ملی</TableCell>
+              <TableCell>وضعیت</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                  در حال بارگذاری…
+                </TableCell>
+              </TableRow>
+            ) : users.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    کاربری با این نقش یافت نشد.
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              users.map((user) => (
+                <TableRow key={user.id} hover>
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Avatar
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          bgcolor: accent,
+                          color: 'primary.main',
+                        }}
+                      >
+                        {(user.first_name || user.email || '?').charAt(0)}
+                      </Avatar>
+                      <Typography variant="body2" fontWeight={700} noWrap>
+                        {getUserFullName(user)}
+                      </Typography>
+                    </Stack>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary" noWrap>
+                      {user.email}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="text.secondary">
+                      {user.national_id?.trim() ? toPersianDigits(user.national_id) : '—'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      size="small"
+                      label={user.is_active ? 'فعال' : 'غیرفعال'}
+                      color={user.is_active ? 'success' : 'default'}
+                      variant="outlined"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </GlassCard>
+  );
+}
 
 function RolePermissionsCell({ permissions }: { permissions: Permission[] }) {
   const [expanded, setExpanded] = useState(false);
@@ -138,10 +290,16 @@ export default function RolesPage() {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
-  const [nameInput, setNameInput] = useState('');
-  const [nationalIdInput, setNationalIdInput] = useState('');
-  const [nameTyping, setNameTyping] = useState(false);
-  const [nationalIdTyping, setNationalIdTyping] = useState(false);
+  const [userInput, setUserInput] = useState('');
+  const [userTyping, setUserTyping] = useState(false);
+  const [debouncedUserSearch, setDebouncedUserSearch] = useState('');
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedUserSearch(userInput.trim());
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [userInput]);
 
   const {
     data: rolesData,
@@ -157,11 +315,48 @@ export default function RolesPage() {
     },
   });
 
-  const { data: usersData, isError: usersError } = useQuery({
-    queryKey: ['accounts-users'],
+  const { data: userSearchData, isFetching: userSearchFetching } = useQuery({
+    queryKey: ['accounts-users', 'role-assign-search', debouncedUserSearch],
     queryFn: async () => {
       const { data: response } = await apiClient.get<PaginatedResponse<AccountUser>>(
-        `${endpoints.accounts.users}?page_size=100`,
+        endpoints.accounts.users,
+        {
+          params: {
+            search: debouncedUserSearch,
+            page_size: 30,
+          },
+        },
+      );
+      return response;
+    },
+    enabled: debouncedUserSearch.length >= MIN_USER_SEARCH_LENGTH,
+  });
+
+  const {
+    data: adminsData,
+    isLoading: adminsLoading,
+    isError: adminsError,
+  } = useQuery({
+    queryKey: ['accounts-users', 'by-role', 'admin'],
+    queryFn: async () => {
+      const { data: response } = await apiClient.get<PaginatedResponse<AccountUser>>(
+        endpoints.accounts.users,
+        { params: { role: 'admin', page_size: 100 } },
+      );
+      return response;
+    },
+  });
+
+  const {
+    data: coordinatorsData,
+    isLoading: coordinatorsLoading,
+    isError: coordinatorsError,
+  } = useQuery({
+    queryKey: ['accounts-users', 'by-role', 'coordinator'],
+    queryFn: async () => {
+      const { data: response } = await apiClient.get<PaginatedResponse<AccountUser>>(
+        endpoints.accounts.users,
+        { params: { role: 'coordinator', page_size: 100 } },
       );
       return response;
     },
@@ -177,12 +372,8 @@ export default function RolesPage() {
     onSuccess: async (updatedUser) => {
       await queryClient.invalidateQueries({ queryKey: ['accounts-users'] });
       setSelectedUser(updatedUser);
-      setNameInput(getUserFullName(updatedUser));
-      setNationalIdInput(
-        updatedUser.national_id?.trim() ? toPersianDigits(updatedUser.national_id) : '',
-      );
-      setNameTyping(false);
-      setNationalIdTyping(false);
+      setUserInput(getUserFullName(updatedUser));
+      setUserTyping(false);
       setSelectedRole(null);
       setAssignFeedback({
         type: 'success',
@@ -198,25 +389,21 @@ export default function RolesPage() {
   });
 
   const roles = rolesData?.results ?? [];
-  const users = usersData?.results ?? [];
-  const usersWithNationalId = useMemo(
-    () => users.filter((user) => user.national_id?.trim()),
-    [users],
-  );
-
-  const getUserFullName = (user: AccountUser) => {
-    const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
-    return fullName || user.email;
-  };
+  const admins = adminsData?.results ?? [];
+  const coordinators = coordinatorsData?.results ?? [];
+  const searchedUsers = userSearchData?.results ?? [];
+  const userOptions = useMemo(() => {
+    if (!selectedUser) return searchedUsers;
+    if (searchedUsers.some((user) => user.id === selectedUser.id)) return searchedUsers;
+    return [selectedUser, ...searchedUsers];
+  }, [searchedUsers, selectedUser]);
 
   const handleSelectUser = (user: AccountUser | null) => {
     setSelectedUser(user);
     setAssignFeedback(null);
-    setNameTyping(false);
-    setNationalIdTyping(false);
+    setUserTyping(false);
     if (user) {
-      setNameInput(getUserFullName(user));
-      setNationalIdInput(user.national_id?.trim() ? toPersianDigits(user.national_id) : '');
+      setUserInput(getUserFullName(user));
     }
   };
 
@@ -326,6 +513,40 @@ export default function RolesPage() {
         </TableContainer>
       </GlassCard>
 
+      <Box sx={{ mb: 2.5 }}>
+        <Typography variant="h6" fontWeight={800} sx={{ mb: 0.5 }}>
+          مدیران و هماهنگ‌کنندگان
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          فهرست کاربران دارای نقش مدیر اصلی یا هماهنگ‌کننده؛ پس از تخصیص نقش، این فهرست به‌روز
+          می‌شود.
+        </Typography>
+        <Stack direction="column" spacing={2}>
+          <Box sx={{ minWidth: 0 }}>
+            <RoleMembersCard
+              title="مدیران اصلی"
+              description="کاربران با نقش مدیر اصلی"
+              users={admins}
+              isLoading={adminsLoading}
+              isError={adminsError}
+              accent={alpha('#818CF8', 0.14)}
+              icon={<AdminPanelSettingsOutlinedIcon fontSize="small" />}
+            />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <RoleMembersCard
+              title="هماهنگ‌کنندگان"
+              description="کاربران با نقش هماهنگ‌کننده"
+              users={coordinators}
+              isLoading={coordinatorsLoading}
+              isError={coordinatorsError}
+              accent={alpha('#22D3EE', 0.14)}
+              icon={<GroupsOutlinedIcon fontSize="small" />}
+            />
+          </Box>
+        </Stack>
+      </Box>
+
       <GlassCard sx={{ p: 2.5 }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
           <AssignmentIndOutlinedIcon color="primary" />
@@ -334,102 +555,52 @@ export default function RolesPage() {
           </Typography>
         </Stack>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          کاربر را با کد ملی یا نام انتخاب کنید. هر حساب فقط یک نقش می‌تواند داشته باشد و نقش
+          کاربر را با نام، ایمیل یا کد ملی جستجو کنید. هر حساب فقط یک نقش می‌تواند داشته باشد و نقش
           جدید جایگزین نقش قبلی می‌شود.
         </Typography>
 
-        {usersError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {t('actions.error')}
-          </Alert>
-        )}
-
         {assignFeedback && (
-          <Alert severity={assignFeedback.type} sx={{ mb: 2 }} onClose={() => setAssignFeedback(null)}>
+          <Alert
+            severity={assignFeedback.type}
+            sx={{ mb: 2 }}
+            onClose={() => setAssignFeedback(null)}
+          >
             {assignFeedback.message}
           </Alert>
         )}
 
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ md: 'center' }}>
           <Autocomplete
-            sx={{ flex: 1 }}
-            options={usersWithNationalId}
+            sx={{ flex: 1.4 }}
+            options={userOptions}
+            loading={userSearchFetching}
             value={selectedUser}
-            inputValue={nationalIdInput}
+            inputValue={userInput}
             onInputChange={(_, value, reason) => {
               if (reason === 'input') {
-                setNationalIdInput(value);
-                setNationalIdTyping(true);
-                if (selectedUser) {
-                  setSelectedUser(null);
-                  setNameInput('');
-                }
+                setUserInput(value);
+                setUserTyping(true);
+                if (selectedUser) setSelectedUser(null);
+              } else if (reason === 'clear') {
+                setUserInput('');
+                setUserTyping(false);
+                setSelectedUser(null);
               }
             }}
             onChange={(_, value) => handleSelectUser(value)}
-            open={
-              nationalIdTyping && nationalIdInput.trim().length >= MIN_USER_SEARCH_LENGTH
-            }
+            open={userTyping && userInput.trim().length >= MIN_USER_SEARCH_LENGTH}
             openOnFocus={false}
-            getOptionLabel={(user) => toPersianDigits(user.national_id ?? '')}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            filterOptions={(options, state) => {
-              const query = state.inputValue.trim();
-              if (query.length < MIN_USER_SEARCH_LENGTH) return [];
-              return options.filter((option) => (option.national_id ?? '').includes(query));
-            }}
-            noOptionsText={
-              nationalIdInput.trim().length < MIN_USER_SEARCH_LENGTH
-                ? 'حداقل ۲ کاراکتر وارد کنید'
-                : 'نتیجه‌ای یافت نشد'
+            filterOptions={(options, state) =>
+              state.inputValue.trim().length < MIN_USER_SEARCH_LENGTH ? [] : options
             }
-            renderOption={(props, option) => (
-              <Box component="li" {...props} key={option.id}>
-                <Stack>
-                  <Typography variant="body2" fontWeight={700}>
-                    {toPersianDigits(option.national_id ?? '')}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {getUserFullName(option)}
-                  </Typography>
-                </Stack>
-              </Box>
-            )}
-            renderInput={(params) => <TextField {...params} label="کد ملی" size="small" />}
-          />
-          <Autocomplete
-            sx={{ flex: 1 }}
-            options={users}
-            value={selectedUser}
-            inputValue={nameInput}
-            onInputChange={(_, value, reason) => {
-              if (reason === 'input') {
-                setNameInput(value);
-                setNameTyping(true);
-                if (selectedUser) {
-                  setSelectedUser(null);
-                  setNationalIdInput('');
-                }
-              }
-            }}
-            onChange={(_, value) => handleSelectUser(value)}
-            open={nameTyping && nameInput.trim().length >= MIN_USER_SEARCH_LENGTH}
-            openOnFocus={false}
             getOptionLabel={getUserFullName}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            filterOptions={(options, state) => {
-              const query = state.inputValue.trim().toLowerCase();
-              if (query.length < MIN_USER_SEARCH_LENGTH) return [];
-              return options.filter((option) => {
-                const fullName = getUserFullName(option).toLowerCase();
-                const email = (option.email ?? '').toLowerCase();
-                return fullName.includes(query) || email.includes(query);
-              });
-            }}
             noOptionsText={
-              nameInput.trim().length < MIN_USER_SEARCH_LENGTH
+              userInput.trim().length < MIN_USER_SEARCH_LENGTH
                 ? 'حداقل ۲ کاراکتر وارد کنید'
-                : 'نتیجه‌ای یافت نشد'
+                : userSearchFetching
+                  ? 'در حال جستجو...'
+                  : 'نتیجه‌ای یافت نشد'
             }
             renderOption={(props, option) => (
               <Box component="li" {...props} key={option.id}>
@@ -437,15 +608,18 @@ export default function RolesPage() {
                   <Typography variant="body2" fontWeight={700}>
                     {getUserFullName(option)}
                   </Typography>
-                  {option.national_id?.trim() && (
-                    <Typography variant="caption" color="text.secondary">
-                      کد ملی: {toPersianDigits(option.national_id)}
-                    </Typography>
-                  )}
+                  <Typography variant="caption" color="text.secondary">
+                    {option.email}
+                    {option.national_id?.trim()
+                      ? ` · کد ملی: ${toPersianDigits(option.national_id)}`
+                      : ''}
+                  </Typography>
                 </Stack>
               </Box>
             )}
-            renderInput={(params) => <TextField {...params} label="نام" size="small" />}
+            renderInput={(params) => (
+              <TextField {...params} label="نام یا کد ملی" size="small" />
+            )}
           />
           <Autocomplete
             sx={{ flex: 1 }}
@@ -469,7 +643,14 @@ export default function RolesPage() {
         </Stack>
 
         {selectedUser && (
-          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.75} alignItems="center" sx={{ mt: 1.75 }}>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            useFlexGap
+            spacing={0.75}
+            alignItems="center"
+            sx={{ mt: 1.75 }}
+          >
             <Typography variant="caption" color="text.secondary">
               نقش فعلی:
             </Typography>

@@ -1,0 +1,426 @@
+@startuml class-domain
+' دیاگرام کلاس مدل دامنه سامانه پناه
+' شناسه‌ها و نام اعضا مطابق کد پروژه به انگلیسی و توضیحات به فارسی است
+
+title دیاگرام کلاس مدل دامنه سامانه پناه
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Tahoma"
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #F4FBF7
+  BorderColor #0B6E4F
+  ArrowColor #2A5DA8
+  FontColor #0A2B20
+}
+skinparam package {
+  BackgroundColor #FBFDFC
+  BorderColor #5F6B7A
+}
+
+abstract class BaseModel <<abstract>> {
+  + id : UUID <<PK>>
+  + created_at : datetime
+  + updated_at : datetime
+}
+note right of BaseModel
+  کلاس پایه همه موجودیت‌ها
+  شناسه یکتای UUID و مهرهای زمانی
+end note
+
+package "accounts" {
+  class User {
+    + email : str <<unique>>
+    + password : str
+    + phone : str
+    + first_name : str
+    + last_name : str
+    + is_active : bool
+    + is_staff : bool
+    + is_approved : bool
+    + is_superuser : bool
+    + avatar : File
+    + last_login : datetime
+    --
+    + full_name() : str
+    + has_perm(codename : str) : bool
+    + effective_permissions() : set<str>
+    + set_password(raw : str) : void
+  }
+
+  class UserProfile {
+    + education : str
+    + occupation : str
+    + interests : text
+    + address : text
+    + blood_type : str
+    + languages : str
+    + years_of_experience : int
+    + date_of_birth : date
+    + emergency_contact_name : str
+    + emergency_contact_phone : str
+    + medical_conditions : text
+    + disability : text
+    --
+    + completeness_ratio() : float
+  }
+
+  class Role {
+    + name : str <<unique>>
+    + slug : str <<unique>>
+    + description : text
+    + is_system : bool
+    --
+    + grant(permission : Permission) : void
+    + revoke(permission : Permission) : void
+  }
+
+  class Permission {
+    + codename : str <<unique>>
+    + name : str
+    + app_label : str
+    + description : text
+  }
+
+  class UserRole {
+    + user_id : UUID <<FK>>
+    + role_id : UUID <<FK>>
+  }
+
+  class RolePermission {
+    + role_id : UUID <<FK>>
+    + permission_id : UUID <<FK>>
+  }
+
+  enum SystemRole <<enumeration>> {
+    ADMIN
+    COORDINATOR
+    VOLUNTEER
+  }
+}
+
+package "volunteers و skills" {
+  class VolunteerProfile {
+    + national_id : str <<unique>>
+    + city : str
+    + bio : text
+    + status : VolunteerStatus
+    + availability : json
+    + custom_skills : json
+    --
+    + activate() : void
+    + reject(reason : str) : void
+    + is_eligible_for(mission : Mission) : bool
+    + matching_score(mission : Mission) : float
+  }
+
+  class Skill {
+    + name : str <<unique>>
+    + category : str
+    + description : text
+  }
+
+  class VolunteerSkill {
+    + proficiency : int
+  }
+
+  enum VolunteerStatus <<enumeration>> {
+    REGISTERED
+    PENDING_APPROVAL
+    ACTIVE
+    REJECTED
+  }
+}
+
+package "disasters" {
+  class Disaster {
+    + title : str
+    + description : text
+    + disaster_type : DisasterType
+    + severity : DisasterSeverity
+    + province : str
+    + city : str
+    + location : str
+    + occurred_at : datetime
+    + needs : json
+    + affected_population : int
+    + status : DisasterStatus
+    + metadata : json
+    --
+    + location_display() : str
+    + resolve() : void
+    + archive() : void
+  }
+
+  enum DisasterType <<enumeration>> {
+    EARTHQUAKE
+    FLOOD
+    FIRE
+    STORM
+    LANDSLIDE
+    EPIDEMIC
+    DROUGHT
+    INDUSTRIAL
+    OTHER
+  }
+
+  enum DisasterSeverity <<enumeration>> {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+  }
+
+  enum DisasterStatus <<enumeration>> {
+    ACTIVE
+    INACTIVE
+    RESOLVED
+    ARCHIVED
+  }
+}
+
+package "missions و assignments" {
+  class Mission {
+    + title : str
+    + description : text
+    + status : MissionStatus
+    + priority : MissionPriority
+    + province : str
+    + city : str
+    + location : str
+    + start_time : datetime
+    + end_time : datetime
+    + is_end_time_tba : bool
+    + required_volunteers : int
+    + special_considerations : text
+    + equipment_needed : text
+    + safety_notes : text
+    + is_visible_to_volunteers : bool
+    + allow_volunteer_applications : bool
+    + metadata : json
+    --
+    + location_display() : str
+    + publish() : void
+    + start() : void
+    + complete() : void
+    + close() : void
+    + remaining_capacity() : int
+    + is_full() : bool
+    + can_accept_applications() : bool
+  }
+
+  class MissionRequiredSkill {
+    + is_required : bool
+  }
+
+  class MissionApplication {
+    + message : text
+    + status : MissionApplicationStatus
+    + reviewed_at : datetime
+    + review_note : text
+    --
+    + approve(reviewer : User, note : str) : Assignment
+    + reject(reviewer : User, note : str) : void
+    + waitlist(reviewer : User, note : str) : void
+    + withdraw() : void
+  }
+
+  class Assignment {
+    + status : AssignmentStatus
+    --
+    + accept() : void
+    + decline(reason : str) : void
+    + check_in(at : datetime) : void
+    + complete() : void
+  }
+
+  enum MissionStatus <<enumeration>> {
+    DRAFT
+    PUBLISHED
+    IN_PROGRESS
+    COMPLETED
+    CLOSED
+  }
+
+  enum MissionPriority <<enumeration>> {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+  }
+
+  enum MissionApplicationStatus <<enumeration>> {
+    SUBMITTED
+    WAITLIST
+    APPROVED
+    REJECTED
+    WITHDRAWN
+  }
+
+  enum AssignmentStatus <<enumeration>> {
+    PENDING
+    ACCEPTED
+    DECLINED
+    CHECKED_IN
+    COMPLETED
+  }
+}
+
+package "reports" {
+  class MissionReport {
+    + content : text
+    + status : ReportStatus
+    --
+    + submit() : void
+    + mark_reviewed(reviewer : User) : void
+  }
+
+  class ReportAttachment {
+    + file : File
+    --
+    + validate_size_and_type() : void
+  }
+
+  enum ReportStatus <<enumeration>> {
+    DRAFT
+    SUBMITTED
+    REVIEWED
+  }
+}
+
+package "notifications و tickets" {
+  class Notification {
+    + title : str
+    + message : text
+    + read_at : datetime
+    + channel : NotificationChannel
+    + resource_type : str
+    + resource_id : str
+    --
+    + is_read() : bool
+    + mark_read(at : datetime) : void
+  }
+
+  class Ticket {
+    + title : str
+    + description : text
+    + status : TicketStatus
+    --
+    + reply(author : User, body : str) : TicketReply
+    + close() : void
+  }
+
+  class TicketReply {
+    + body : text
+    + is_staff_reply : bool
+  }
+
+  enum NotificationChannel <<enumeration>> {
+    IN_APP
+    EMAIL
+  }
+
+  enum TicketStatus <<enumeration>> {
+    OPEN
+    IN_PROGRESS
+    ANSWERED
+    CLOSED
+  }
+}
+
+package "audit_logs" {
+  class AuditLog {
+    + user_id : UUID
+    + action : str
+    + resource_type : str
+    + resource_id : str
+    + ip_address : str
+    + user_agent : str
+    + correlation_id : str
+    + metadata : json
+    --
+    + record(actor : User, action : str, resource : object) : AuditLog
+  }
+}
+
+BaseModel <|-- User
+BaseModel <|-- UserProfile
+BaseModel <|-- Role
+BaseModel <|-- Permission
+BaseModel <|-- UserRole
+BaseModel <|-- RolePermission
+BaseModel <|-- VolunteerProfile
+BaseModel <|-- Skill
+BaseModel <|-- VolunteerSkill
+BaseModel <|-- Disaster
+BaseModel <|-- Mission
+BaseModel <|-- MissionRequiredSkill
+BaseModel <|-- MissionApplication
+BaseModel <|-- Assignment
+BaseModel <|-- MissionReport
+BaseModel <|-- ReportAttachment
+BaseModel <|-- Notification
+BaseModel <|-- Ticket
+BaseModel <|-- TicketReply
+BaseModel <|-- AuditLog
+
+User "1" *-- "0..1" UserProfile : profile >
+User "1" *-- "0..1" VolunteerProfile : volunteer_profile >
+User "1" o-- "0..*" UserRole : user_roles >
+Role "1" o-- "0..*" UserRole : user_roles >
+Role "1" o-- "0..*" RolePermission : role_permissions >
+Permission "1" o-- "0..*" RolePermission : role_permissions >
+Role ..> SystemRole : نقش‌های پیش‌ساخته
+
+VolunteerProfile "1" *-- "0..*" VolunteerSkill : volunteer_skills >
+Skill "1" o-- "0..*" VolunteerSkill : volunteer_skills >
+VolunteerProfile ..> VolunteerStatus
+
+Disaster "1" o-- "0..*" Mission : missions >
+Disaster ..> DisasterType
+Disaster ..> DisasterSeverity
+Disaster ..> DisasterStatus
+
+User "1" o-- "0..*" Mission : coordinated_missions >
+Mission "1" *-- "0..*" MissionRequiredSkill : required_skills >
+Skill "1" o-- "0..*" MissionRequiredSkill : mission_requirements >
+Mission "1" *-- "0..*" MissionApplication : applications >
+Mission "1" *-- "0..*" Assignment : assignments >
+Mission "1" *-- "0..*" MissionReport : reports >
+Mission ..> MissionStatus
+Mission ..> MissionPriority
+
+VolunteerProfile "1" o-- "0..*" MissionApplication : mission_applications >
+VolunteerProfile "1" o-- "0..*" Assignment : assignments >
+User "0..1" o-- "0..*" MissionApplication : reviewed_mission_applications >
+MissionApplication ..> MissionApplicationStatus
+MissionApplication ..> Assignment : تأیید موجب ایجاد تخصیص می‌شود
+Assignment ..> AssignmentStatus
+
+MissionReport "1" *-- "0..*" ReportAttachment : attachments >
+User "1" o-- "0..*" MissionReport : mission_reports >
+MissionReport ..> ReportStatus
+
+User "1" *-- "0..*" Notification : notifications >
+Notification ..> NotificationChannel
+User "1" o-- "0..*" Ticket : tickets >
+User "0..1" o-- "0..*" Ticket : tickets_opened >
+Ticket "1" *-- "0..*" TicketReply : replies >
+User "1" o-- "0..*" TicketReply : ticket_replies >
+Ticket ..> TicketStatus
+
+note bottom of Mission
+  قواعد کاری کلیدی
+  انتشار مأموریت نیازمند مجوز missions.publish است
+  قید یکتایی روی جفت مأموریت و داوطلب در درخواست و تخصیص برقرار است
+  تعداد تخصیص فعال نمی‌تواند از required_volunteers بیشتر شود
+end note
+
+note bottom of AuditLog
+  همه گذارهای وضعیت و کنش‌های حساس
+  در این موجودیت با شناسه همبستگی درخواست ثبت می‌شوند
+end note
+
+@enduml

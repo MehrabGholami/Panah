@@ -1,6 +1,6 @@
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import panahLogo from '@/assets/images/panah-logo.png';
 
 interface AppLoadingScreenProps {
   fullScreen?: boolean;
@@ -8,6 +8,8 @@ interface AppLoadingScreenProps {
 
 export function AppLoadingScreen({ fullScreen = false }: AppLoadingScreenProps) {
   const { t } = useTranslation('common');
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   return (
     <Box
@@ -165,24 +167,22 @@ export function AppLoadingScreen({ fullScreen = false }: AppLoadingScreenProps) 
               }}
             />
             <Box
+              component="img"
+              src={panahLogo}
+              alt={t('appName')}
               sx={{
                 width: 56,
                 height: 56,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'linear-gradient(135deg, #22D3EE 0%, #818CF8 100%)',
-                boxShadow: '0 10px 28px rgba(34, 211, 238, 0.35)',
+                objectFit: 'contain',
+                display: 'block',
+                filter: isDark ? 'invert(1) brightness(1.05)' : 'none',
                 animation: 'loadingLogoFloat 2.8s ease-in-out infinite',
                 '@keyframes loadingLogoFloat': {
                   '0%, 100%': { transform: 'translateY(0)' },
                   '50%': { transform: 'translateY(-4px)' },
                 },
               }}
-            >
-              <VolunteerActivismIcon sx={{ color: '#0B0F1A', fontSize: 30 }} />
-            </Box>
+            />
           </Box>
 
           <Typography

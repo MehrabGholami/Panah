@@ -83,6 +83,9 @@ class VolunteerService(BaseService):
             resource_id=profile.pk,
             user_id=user.pk,
         )
+        from dashboard.application.services.dashboard_service import DashboardService
+
+        DashboardService.bump_cache_version()
         from notifications.application.services.notification_dispatcher import NotificationDispatcher
 
         dispatcher = NotificationDispatcher()

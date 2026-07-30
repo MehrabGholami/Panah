@@ -22,18 +22,20 @@ import {
   TableHead,
   TableRow,
   Typography,
+  alpha,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { DEFAULT_PAGE_SIZE } from '@/shared/constants/pagination';
-import { GlassCard, StatusChip, TablePagination } from '@/shared/components/ui';
+import { GlassCard, JalaliDateField, StatusChip, TablePagination } from '@/shared/components/ui';
 import { usePermissions } from '@/shared/hooks/useAuth';
 import { tableHeadSx } from '@/shared/styles/tableHeader';
 import type { Disaster, DisasterNeed, PaginatedResponse } from '@/shared/types';
 import { getDisasterLocationDisplay } from '@/shared/utils/locationDisplay';
+import { toPersianDigits } from '@/shared/utils/persianDigits';
 import { CreateDisasterDialog } from './CreateDisasterDialog';
 
 function StatCard({
@@ -84,17 +86,28 @@ export default function DisastersPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingDisaster, setEditingDisaster] = useState<Disaster | null>(null);
   const [deletingDisaster, setDeletingDisaster] = useState<Disaster | null>(null);
+  const [fromDate, setFromDate] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
   const canCreate = hasAnyRole(['admin']) || hasPermission('disasters.create');
   const canManage = hasAnyRole(['admin']) || hasPermission('disasters.update');
 
+  useEffect(() => {
+    setPage(1);
+  }, [fromDate]);
+
   const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: ['disasters', 'list', page],
+    queryKey: ['disasters', 'list', page, fromDate],
     queryFn: async () => {
       const { data: response } = await apiClient.get<PaginatedResponse<Disaster>>(
         endpoints.disasters.list,
-        { params: { page, page_size: DEFAULT_PAGE_SIZE } },
+        {
+          params: {
+            page,
+            page_size: DEFAULT_PAGE_SIZE,
+            ...(fromDate ? { occurred_after: fromDate } : {}),
+          },
+        },
       );
       return response;
     },
@@ -102,11 +115,17 @@ export default function DisastersPage() {
   });
 
   const { data: activeCountData } = useQuery({
-    queryKey: ['disasters', 'count', 'active'],
+    queryKey: ['disasters', 'count', 'active', fromDate],
     queryFn: async () => {
       const { data: response } = await apiClient.get<PaginatedResponse<Disaster>>(
         endpoints.disasters.list,
-        { params: { status: 'active', page_size: 1 } },
+        {
+          params: {
+            status: 'active',
+            page_size: 1,
+            ...(fromDate ? { occurred_after: fromDate } : {}),
+          },
+        },
       );
       return response;
     },
@@ -248,6 +267,42 @@ export default function DisastersPage() {
       )}
 
       <GlassCard sx={{ p: { xs: 2, md: 2.5 } }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={1.5}
+          alignItems={{ sm: 'center' }}
+          sx={{
+            mb: 2,
+            p: 1.5,
+            borderRadius: 2.5,
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: (theme) =>
+              alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.04 : 0.03),
+          }}
+        >
+          <Box sx={{ minWidth: { sm: 240 }, flex: 1 }}>
+            <JalaliDateField
+              label={t('filters.fromDate')}
+              value={fromDate}
+              onChange={setFromDate}
+              size="small"
+            />
+          </Box>
+          <Typography variant="caption" color="text.secondary" sx={{ flex: 2 }}>
+            {t('filters.fromDateHint')}
+          </Typography>
+          {fromDate && (
+            <Chip
+              size="small"
+              label={toPersianDigits(fromDate.replaceAll('-', '/'))}
+              onDelete={() => setFromDate(null)}
+              aria-label={t('filters.fromDateClear')}
+              sx={{ fontWeight: 700 }}
+            />
+          )}
+        </Stack>
+
         <TableContainer>
           <Table>
             <TableHead sx={tableHeadSx}>

@@ -1,0 +1,134 @@
+@startuml communication-notify
+' دیاگرام ارتباط برای سازوکار اعلان‌رسانی سامانه پناه
+' نمای ساختاری همکاری اشیا با شماره‌گذاری ترتیب پیام‌ها روی پیوندها
+
+title دیاگرام ارتباط سازوکار اعلان‌رسانی سامانه پناه
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Tahoma"
+skinparam ArrowColor #2A5DA8
+skinparam object {
+  BackgroundColor #F4FBF7
+  BorderColor #0B6E4F
+  FontColor #0A2B20
+  AttributeFontColor #1F2933
+}
+
+package "بازیگران" {
+  object "coordinatorUser : User" as COORD {
+    role = coordinator
+  }
+  object "volunteerUser : User" as VOL {
+    role = volunteer
+  }
+}
+
+package "لایه کاربرد" {
+  object "missionService : MissionService" as MIS
+  object "applicationService : ApplicationService" as APP
+  object "assignmentService : AssignmentService" as ASG
+  object "notificationService : NotificationService" as NOT
+  object "auditService : AuditService" as AUD
+}
+
+package "همکاران اعلان‌رسانی" {
+  object "recipientResolver : RecipientResolver" as RES
+  object "templateRenderer : TemplateRenderer" as TPL
+  object "notificationRepository : NotificationRepository" as REPO
+  object "taskDispatcher : CeleryTaskDispatcher" as DISP
+}
+
+package "پردازش نامتقارن" {
+  object "sendEmailTask : SendEmailTask" as TASK
+  object "emailAdapter : SmtpEmailAdapter" as MAILAD
+  object "beatScheduler : CeleryBeatScheduler" as BEAT
+}
+
+package "زیرساخت" {
+  object "postgres : RelationalDatabase" as PG {
+    engine = PostgreSQL 17
+  }
+  object "redis : MessageBroker" as RD {
+    engine = Redis 7
+  }
+  object "smtp : ExternalMailService" as SMTP {
+    protocol = SMTP
+  }
+}
+
+' جریان یک انتشار مأموریت و اعلان گروهی
+COORD --> MIS : ۱ فراخوانی publish با شناسه مأموریت
+MIS --> NOT : ۲ notifyMissionPublished با نمایه مأموریت
+NOT --> RES : ۳ resolveEligibleVolunteers با مهارت و موقعیت مأموریت
+RES --> PG : ۴ پرسمان داوطلبان فعال واجد شرایط
+PG --> RES : ۵ فهرست شناسه و رایانامه گیرندگان
+RES --> NOT : ۶ فهرست گیرندگان
+NOT --> TPL : ۷ render با کلید قالب mission_published و داده متنی
+TPL --> NOT : ۸ عنوان و متن رندرشده فارسی
+NOT --> REPO : ۹ bulkCreate اعلان‌های درون‌برنامه‌ای
+REPO --> PG : ۱۰ درج گروهی رکوردهای اعلان
+NOT --> DISP : ۱۱ enqueue وظیفه ارسال ایمیل گروهی
+DISP --> RD : ۱۲ انتشار پیام وظیفه در صف
+
+' جریان دو نتیجه بررسی درخواست همکاری
+COORD --> APP : ۱۳ فراخوانی review با وضعیت هدف و یادداشت
+APP --> NOT : ۱۴ notifyApplicationReviewed با نتیجه بررسی
+NOT --> TPL : ۱۵ render با کلید قالب application_approved یا application_rejected
+TPL --> NOT : ۱۶ متن رندرشده
+NOT --> REPO : ۱۷ create اعلان برای داوطلب
+REPO --> PG : ۱۸ درج رکورد اعلان
+NOT --> DISP : ۱۹ enqueue وظیفه ارسال ایمیل
+DISP --> RD : ۲۰ انتشار پیام وظیفه
+APP --> ASG : ۲۱ createAssignment در صورت تأیید درخواست
+ASG --> NOT : ۲۲ notifyAssignmentCreated
+
+' جریان سه پردازش نامتقارن و تحویل پیام
+RD --> TASK : ۲۳ تحویل وظیفه به کارگر
+TASK --> REPO : ۲۴ loadNotificationPayload با شناسه اعلان
+REPO --> PG : ۲۵ بازیابی داده اعلان و گیرنده
+PG --> REPO : ۲۶ داده اعلان
+REPO --> TASK : ۲۷ بار داده پیام
+TASK --> MAILAD : ۲۸ send با گیرنده و موضوع و بدنه
+MAILAD --> SMTP : ۲۹ تحویل پیام با پروتکل SMTP
+SMTP --> MAILAD : ۳۰ پاسخ پذیرش یا خطای تحویل
+MAILAD --> TASK : ۳۱ نتیجه ارسال
+TASK --> REPO : ۳۲ markDelivered یا ثبت خطا و زمان‌بندی تلاش مجدد
+REPO --> PG : ۳۳ به‌روزرسانی وضعیت ارسال
+TASK --> AUD : ۳۴ record رخداد ارسال اعلان
+AUD --> PG : ۳۵ درج رکورد حسابرسی
+
+' جریان چهار وظایف دوره‌ای
+BEAT --> RD : ۳۶ انتشار وظیفه دوره‌ای یادآوری تخصیص بی‌پاسخ
+RD --> TASK : ۳۷ تحویل وظیفه دوره‌ای
+TASK --> ASG : ۳۸ findPendingAssignmentsPastDue
+ASG --> NOT : ۳۹ notifyAssignmentReminder
+
+' جریان پنج خواندن اعلان توسط داوطلب
+VOL --> NOT : ۴۰ listNotifications با فیلتر خوانده‌نشده
+NOT --> REPO : ۴۱ findByUser با صفحه‌بندی
+REPO --> PG : ۴۲ پرسمان اعلان‌های کاربر
+PG --> REPO : ۴۳ فهرست اعلان‌ها
+REPO --> NOT : ۴۴ فهرست اعلان‌ها
+NOT --> VOL : ۴۵ نمایه اعلان‌ها همراه با شمار خوانده‌نشده
+VOL --> NOT : ۴۶ markRead با شناسه اعلان
+NOT --> REPO : ۴۷ setReadAt با مهر زمانی جاری
+REPO --> PG : ۴۸ به‌روزرسانی فیلد read_at
+
+note bottom of NOT
+  قواعد اعلان‌رسانی
+  کانال درون‌برنامه‌ای همیشه فعال است
+  کانال ایمیل بر پایه تنظیمات کاربر و اهمیت رخداد انتخاب می‌شود
+  هر اعلان با resource_type و resource_id به منبع مرتبط پیوند دارد
+  ارسال ناموفق تا سه بار با فاصله فزاینده تلاش مجدد می‌شود
+end note
+
+note bottom of TPL
+  قالب‌های اعلان به زبان فارسی و راست‌چین نگه‌داری می‌شوند
+  کلیدهای قالب
+  mission_published و application_approved و application_rejected
+  application_waitlisted و assignment_created و assignment_reminder
+  report_review_requested و account_approved
+end note
+
+@enduml

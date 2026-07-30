@@ -9,9 +9,39 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.production
       DEBUG: "0"
+      BACKUP_ROOT: /backups
+      LOG_DIR: /var/log/app
     volumes:
       - ./media:/app/media
       - ./static:/app/staticfiles
+      - ./logs:/var/log/app
+      - ./database/backups:/backups
+
+  volunteer-management-celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DEBUG: "0"
+      BACKUP_ROOT: /backups
+      LOG_DIR: /var/log/app
+    volumes:
+      - ./media:/app/media
+      - ./logs:/var/log/app
+      - ./database/backups:/backups
+
+  volunteer-management-celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DEBUG: "0"
+      BACKUP_ROOT: /backups
+      LOG_DIR: /var/log/app
+    volumes:
+      - ./media:/app/media
       - ./logs:/var/log/app
       - ./database/backups:/backups
 

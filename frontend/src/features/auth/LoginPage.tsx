@@ -16,12 +16,12 @@ import { z } from 'zod';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { clearAuthError, login } from '@/app/slices/authSlice';
 import { LoginProfileInviteCard } from '@/features/auth/components/LoginProfileInviteCard';
-import { GradientButton, PillBadge } from '@/shared/components/ui';
+import { GradientButton, PasswordTextField, PillBadge } from '@/shared/components/ui';
 import { isVolunteerProfileIncomplete, getPostLoginPath } from '@/shared/utils/profileCompletion';
 
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(1),
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
@@ -101,9 +101,8 @@ export default function LoginPage() {
           helperText={errors.email ? t('validation.email') : undefined}
           {...register('email')}
         />
-        <TextField
+        <PasswordTextField
           label={t('login.password')}
-          type="password"
           size="small"
           fullWidth
           autoComplete="current-password"

@@ -1,7 +1,7 @@
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink } from 'react-router-dom';
+import panahLogo from '@/assets/images/panah-logo.png';
 
 interface AppLogoProps {
   to?: string;
@@ -10,22 +10,24 @@ interface AppLogoProps {
 
 export function AppLogo({ to = '/', showText = true }: AppLogoProps) {
   const { t } = useTranslation('common');
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   const content = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, textDecoration: 'none', color: 'inherit' }}>
       <Box
+        component="img"
+        src={panahLogo}
+        alt={t('appName')}
         sx={{
           width: 40,
           height: 40,
-          borderRadius: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(135deg, #22D3EE 0%, #818CF8 100%)',
+          objectFit: 'contain',
+          display: 'block',
+          flexShrink: 0,
+          filter: isDark ? 'invert(1) brightness(1.05)' : 'none',
         }}
-      >
-        <VolunteerActivismIcon sx={{ color: '#0B0F1A', fontSize: 24 }} />
-      </Box>
+      />
       {showText && (
         <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
           <Typography variant="h6" sx={{ fontWeight: 800, lineHeight: 1.1 }}>

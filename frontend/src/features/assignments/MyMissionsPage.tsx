@@ -1,6 +1,7 @@
 import {
   Alert,
   Box,
+  Button,
   Stack,
   Table,
   TableBody,
@@ -11,15 +12,21 @@ import {
   Typography,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AssignmentTasksDialog } from '@/features/assignments/components/AssignmentTasksDialog';
 import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { GhostButton, GlassCard, GradientButton, StatusChip } from '@/shared/components/ui';
+import { usePermissions } from '@/shared/hooks/useAuth';
 import type { Assignment, PaginatedResponse } from '@/shared/types';
 
 export default function MyMissionsPage() {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'missions']);
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
+  const canReportTask = hasPermission('assignments.report_task');
+  const [tasksAssignment, setTasksAssignment] = useState<Assignment | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['assignments', 'my'],
@@ -51,10 +58,11 @@ export default function MyMissionsPage() {
   const assignments = data?.results ?? [];
 
   const statusLabels: Record<string, string> = {
-    pending: 'در انتظار پاسخ',
-    accepted: 'پذیرفته‌شده',
-    declined: 'رد‌شده',
-    completed: 'تکمیل‌شده',
+    pending: t('assignmentStatus.pending', { ns: 'missions' }),
+    accepted: t('assignmentStatus.accepted', { ns: 'missions' }),
+    declined: t('assignmentStatus.declined', { ns: 'missions' }),
+    checked_in: t('assignmentStatus.checked_in', { ns: 'missions' }),
+    completed: t('assignmentStatus.completed', { ns: 'missions' }),
   };
 
   return (
@@ -121,6 +129,16 @@ export default function MyMissionsPage() {
                           </GhostButton>
                         </Stack>
                       )}
+                      {(assignment.status === 'accepted' || assignment.status === 'checked_in') &&
+                        canReportTask && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setTasksAssignment(assignment)}
+                          >
+                            {t('tasks.viewTitle', { ns: 'missions' })}
+                          </Button>
+                        )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -129,6 +147,14 @@ export default function MyMissionsPage() {
           </Table>
         </TableContainer>
       </GlassCard>
+
+      <AssignmentTasksDialog
+        open={Boolean(tasksAssignment)}
+        onClose={() => setTasksAssignment(null)}
+        assignmentId={tasksAssignment?.id ?? null}
+        volunteerLabel={tasksAssignment?.mission_title}
+        mode="report"
+      />
     </Box>
   );
 }

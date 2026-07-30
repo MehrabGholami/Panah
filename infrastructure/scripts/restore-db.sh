@@ -53,3 +53,5 @@ echo "Restoring from ${BACKUP_FILE}..."
 gunzip -c "${BACKUP_FILE}" | docker exec -i "${CONTAINER}" psql -U "${DB_USER}" -d "${DB_NAME}"
 
 echo "Restore complete."
+echo "Next: run migrations if schema drift is possible:"
+echo "  docker compose exec volunteer-management-backend python manage.py migrate"

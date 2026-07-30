@@ -1,5 +1,34 @@
 {
   "title": "مأموریت‌ها",
+  "myMissionsTitle": "مأموریت‌های من",
+  "myMissionsSubtitle": "مأموریت‌هایی که به‌عنوان هماهنگ‌کننده به شما تخصیص داده شده‌اند؛ وضعیت، تیم، درخواست‌ها و زمان‌بندی را از اینجا پیگیری کنید.",
+  "myMissionsBrowseAll": "همه مأموریت‌ها",
+  "myMissionsSearch": "جستجو",
+  "myMissionsSearchPlaceholder": "عنوان، شرح یا محل مأموریت…",
+  "myMissionsEmpty": "مأموریت تخصیص‌یافته‌ای ندارید",
+  "myMissionsEmptyHint": "پس از تخصیص توسط مدیر، مأموریت‌ها اینجا نمایش داده می‌شوند. می‌توانید از فهرست همه مأموریت‌ها درخواست هماهنگی بدهید.",
+  "myMissionsOpenDetail": "مشاهده جزئیات و مدیریت",
+  "myMissionsReviewApplications": "بررسی درخواست‌ها",
+  "myMissionsPendingHint": "در این صفحه {{count}} درخواست در انتظار بررسی دارید.",
+  "myMissionsStats": {
+    "total": "کل مأموریت‌های من",
+    "published": "منتشرشده",
+    "inProgress": "در حال اجرا",
+    "visible": "قابل مشاهده برای داوطلب"
+  },
+  "myMissionsColumns": {
+    "title": "عنوان مأموریت",
+    "disaster": "بحران مرتبط",
+    "location": "موقعیت",
+    "priority": "اولویت",
+    "status": "وضعیت",
+    "team": "تیم",
+    "assignedOfRequired": "تخصیص‌یافته / موردنیاز",
+    "teamHint": "تخصیص‌یافته از موردنیاز",
+    "apps": "درخواست‌ها",
+    "visibility": "نمایش",
+    "actions": "عملیات"
+  },
   "availableTitle": "مأموریت‌های موجود",
   "availableSubtitle": "مأموریت‌های منتشرشده‌ای که مدیر برای مشاهده و درخواست شرکت فعال کرده است.",
   "managementSubtitle": "تعریف و مدیریت مأموریت‌های مرتبط با بحران‌ها",
@@ -35,12 +64,26 @@
     "rejected": "ردشده",
     "withdrawn": "لغوشده"
   },
+  "assignmentStatus": {
+    "pending": "در انتظار پاسخ",
+    "accepted": "پذیرفته‌شده",
+    "declined": "رد‌شده",
+    "checked_in": "حضور ثبت‌شده",
+    "completed": "تکمیل‌شده"
+  },
+  "coordinatorRequestStatus": {
+    "submitted": "در انتظار بررسی",
+    "approved": "تأییدشده",
+    "rejected": "ردشده",
+    "withdrawn": "لغوشده"
+  },
   "sections": {
     "basic": "اطلاعات پایه",
     "location": "موقعیت مأموریت",
     "requirements": "نیازمندی‌ها و ملاحظات",
     "visibility": "نمایش و درخواست شرکت",
-    "missionDetail": "شرح مأموریت"
+    "missionDetail": "شرح مأموریت",
+    "coordination": "هماهنگی مأموریت"
   },
   "fields": {
     "title": "عنوان",
@@ -63,7 +106,8 @@
     "allowApplications": "امکان ارسال درخواست شرکت",
     "coordinator": "هماهنگ‌کننده",
     "assignments": "تکالیف ثبت‌شده",
-    "applications": "درخواست‌های شرکت"
+    "applications": "درخواست‌های شرکت",
+    "coordinationOwnership": "مالکیت هماهنگی"
   },
   "hints": {
     "visibility": "تا زمانی که مأموریت منتشر نشود، حتی با فعال بودن نمایش، برای داوطلبان قابل مشاهده نیست.",
@@ -71,7 +115,9 @@
     "missionDetail": "هدف مأموریت، فعالیت‌های داوطلب، محل و زمان تجمع، شرایط حضور و انتظارات را شفاف بنویسید تا داوطلبان قبل از درخواست، تصویر روشنی داشته باشند.",
     "specialConsiderations": "محدودیت‌های جسمانی، شرایط آب‌وهوایی، نیاز به مجوز یا هماهنگی خاص و موارد مشابه.",
     "equipmentNeeded": "لباس کار، کفش، ابزار و تجهیزات شخصی که داوطلب باید همراه داشته باشد.",
-    "safetyNotes": "خطرات محتمل، قوانین ایمنی و اقدامات احتیاطی در محل مأموریت."
+    "safetyNotes": "خطرات محتمل، قوانین ایمنی و اقدامات احتیاطی در محل مأموریت.",
+    "requestCoordination": "درخواست شما برای ادمین ارسال می‌شود. پس از تأیید، مالکیت هماهنگی مأموریت به شما منتقل می‌شود.",
+    "assignCoordinator": "تخصیص مستقیم هماهنگ‌کننده بدون صف درخواست. درخواست‌های در انتظار برای این مأموریت بسته می‌شوند."
   },
   "placeholders": {
     "missionDetail": "مثال: هدف مأموریت، محل تجمع، ساعات کاری، وظایف داوطلبان، نحوه هماهنگی و ..."
@@ -81,9 +127,18 @@
   },
   "filters": {
     "disaster": "فیلتر بر اساس بحران",
+    "disasterPlaceholder": "جستجوی عنوان بحران…",
+    "disasterNoOptions": "بحرانی یافت نشد",
+    "disasterClear": "پاک کردن فیلتر بحران",
     "status": "وضعیت",
     "allStatuses": "همه وضعیت‌ها",
-    "mineOnly": "فقط مأموریت‌های من"
+    "mineOnly": "فقط مأموریت‌های من",
+    "coordinator": "فیلتر بر اساس هماهنگ‌کننده",
+    "coordinatorPlaceholder": "جستجوی نام یا ایمیل هماهنگ‌کننده…",
+    "coordinatorNoOptions": "هماهنگ‌کننده‌ای یافت نشد",
+    "coordinatorClear": "پاک کردن فیلتر هماهنگ‌کننده",
+    "fromDate": "فیلتر بر اساس تاریخ",
+    "fromDateHint": "بحران‌ها و مأموریت‌های از این تاریخ به بعد"
   },
   "stats": {
     "total": "کل مأموریت‌ها",
@@ -93,10 +148,13 @@
   },
   "badges": {
     "visible": "قابل مشاهده",
+    "hidden": "مخفی",
     "applications": "درخواست فعال",
     "pending": "در انتظار",
     "applied": "درخواست ثبت شد",
-    "waitlisted": "لیست انتظار"
+    "waitlisted": "لیست انتظار",
+    "youAreCoordinator": "هماهنگ‌کننده شما",
+    "coordRequestPending": "درخواست هماهنگی در انتظار"
   },
   "actions": {
     "create": "ایجاد مأموریت",
@@ -110,7 +168,10 @@
     "apply": "درخواست شرکت",
     "viewDetail": "جزئیات",
     "submitApplication": "ارسال درخواست",
-    "cancel": "انصراف"
+    "cancel": "انصراف",
+    "requestCoordination": "درخواست هماهنگی",
+    "assignCoordinator": "تخصیص هماهنگ‌کننده",
+    "submitCoordinationRequest": "ارسال درخواست هماهنگی"
   },
   "applications": {
     "title": "درخواست‌های شرکت داوطلبان",
@@ -131,6 +192,60 @@
       "subtitle": "داوطلب در لیست انتظار می‌ماند تا در صورت آزاد شدن ظرفیت، امکان تأیید فراهم شود."
     }
   },
+  "acceptedTeam": {
+    "title": "داوطلبان پذیرفته‌شده",
+    "volunteer": "داوطلب",
+    "tasksCount": "تعداد وظایف",
+    "empty": "هنوز داوطلبی انتساب را نپذیرفته است.",
+    "manageTasks": "مدیریت وظایف"
+  },
+  "tasks": {
+    "manageTitle": "مدیریت وظایف داوطلب",
+    "viewTitle": "وظایف من",
+    "title": "عنوان وظیفه",
+    "description": "توضیحات (اختیاری)",
+    "add": "افزودن وظیفه",
+    "save": "ذخیره",
+    "edit": "ویرایش",
+    "delete": "حذف",
+    "cancel": "انصراف",
+    "empty": "وظیفه‌ای تعریف نشده است.",
+    "status": "وضعیت",
+    "statuses": {
+      "not_done": "انجام نشده",
+      "in_progress": "در حال انجام",
+      "done": "انجام شده"
+    },
+    "createSuccess": "وظیفه افزوده شد.",
+    "updateSuccess": "وظیفه به‌روزرسانی شد.",
+    "deleteSuccess": "وظیفه حذف شد.",
+    "statusSuccess": "وضعیت وظیفه به‌روزرسانی شد.",
+    "error": "عملیات وظیفه انجام نشد."
+  },
+  "coordination": {
+    "inboxTitle": "درخواست‌های هماهنگی",
+    "inboxSubtitle": "بررسی و تأیید/رد درخواست هماهنگ‌کنندگان برای مالکیت مأموریت‌ها",
+    "requester": "درخواست‌دهنده",
+    "currentCoordinator": "هماهنگ‌کننده فعلی",
+    "message": "پیام",
+    "empty": "درخواست هماهنگی در انتظاری وجود ندارد.",
+    "approve": "تأیید",
+    "reject": "رد",
+    "reviewNote": "یادداشت مدیر (اختیاری)",
+    "requestDialog": {
+      "title": "درخواست هماهنگی مأموریت",
+      "subtitle": "پس از تأیید ادمین، شما هماهنگ‌کننده این مأموریت خواهید شد.",
+      "message": "توضیح (اختیاری)",
+      "messagePlaceholder": "دلیل درخواست، منطقه فعالیت، ظرفیت و آمادگی خود را بنویسید..."
+    },
+    "assignDialog": {
+      "title": "تخصیص هماهنگ‌کننده",
+      "subtitle": "هماهنگ‌کننده مسئول این مأموریت را مشخص کنید.",
+      "coordinator": "هماهنگ‌کننده",
+      "note": "یادداشت (اختیاری)"
+    },
+    "requestsOnMission": "درخواست‌های هماهنگی این مأموریت"
+  },
   "applyDialog": {
     "title": "درخواست شرکت در مأموریت",
     "message": "پیام شما (اختیاری)",
@@ -146,6 +261,11 @@
     "visibilityUpdated": "تنظیمات نمایش به‌روزرسانی شد.",
     "applicationReviewed": "درخواست بررسی شد.",
     "applySuccess": "درخواست شما با موفقیت ثبت شد. نتیجه از طریق اعلان‌ها اطلاع‌رسانی می‌شود.",
-    "applyError": "ثبت درخواست انجام نشد."
+    "applyError": "ثبت درخواست انجام نشد.",
+    "coordinationRequestSuccess": "درخواست هماهنگی ثبت شد و برای ادمین ارسال گردید.",
+    "coordinationRequestError": "ثبت درخواست هماهنگی انجام نشد.",
+    "coordinationReviewed": "درخواست هماهنگی بررسی شد.",
+    "coordinatorAssigned": "هماهنگ‌کننده مأموریت به‌روزرسانی شد.",
+    "assignCoordinatorError": "تخصیص هماهنگ‌کننده انجام نشد."
   }
 }

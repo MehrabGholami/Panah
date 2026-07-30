@@ -72,10 +72,10 @@ class BulkSeedService:
         volunteers: int = 800,
         disasters: int = 25,
         missions: int = 100,
-        password: str = "SeedPass123!",
+        password: str,
         clear: bool = False,
-        admin_email: str = "InvesticaCO@gmail.com",
-        admin_password: str = "Investica003",
+        admin_email: str,
+        admin_password: str,
     ) -> BulkSeedResult:
         result = BulkSeedResult(batch_id=self.batch_id)
         with transaction.atomic():
@@ -247,6 +247,7 @@ class BulkSeedService:
                     national_id=self._national_id(index),
                     city=city if profile_tier != "minimal" else (city if index % 3 == 0 else ""),
                     bio=self.rng.choice(BIOS) if profile_tier in {"full", "partial"} else "",
+                    gender=self.rng.choice(["female", "male", "female", "male", "unspecified"]),
                     status=status,
                     availability=self.rng.choice(AVAILABILITY_PRESETS) if profile_tier == "full" else {},
                     custom_skills=self._custom_skills() if profile_tier == "full" and index % 4 == 0 else [],

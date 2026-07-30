@@ -19,6 +19,8 @@ import {
   Switch,
   TextField,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
@@ -141,6 +143,8 @@ export function CreateMissionDialog({
   defaultDisasterId,
 }: CreateMissionDialogProps) {
   const { t } = useTranslation('missions');
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const queryClient = useQueryClient();
   const { hasRole } = usePermissions();
   const isAdmin = hasRole('admin');
@@ -307,7 +311,19 @@ export function CreateMissionDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      fullWidth
+      maxWidth="md"
+      fullScreen={fullScreen}
+      PaperProps={{
+        sx: {
+          m: { xs: fullScreen ? 0 : 1.5, sm: 2 },
+          width: { xs: fullScreen ? '100%' : 'calc(100% - 24px)', sm: undefined },
+        },
+      }}
+    >
       <DialogTitle sx={{ pb: 1 }}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between">
           <Box>

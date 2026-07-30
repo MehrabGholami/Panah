@@ -1,9 +1,12 @@
+import os
+
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from accounts.application.services.seed_service import SeedService
 from accounts.infrastructure.repositories.user_repository import UserRepository
 from accounts.models import Role
+from common.utils.env_credentials import get_admin_email, get_admin_password
 from disasters.application.services.disaster_service import DisasterService
 from missions.application.services.mission_service import MissionService
 from skills.models import Skill
@@ -13,9 +16,12 @@ class Command(BaseCommand):
     help = "Seed demo disaster scenario for testing and demos."
 
     def handle(self, *args, **options):
+        admin_email = get_admin_email()
+        admin_password = get_admin_password()
+
         SeedService().seed_all(
-            admin_email="InvesticaCO@gmail.com",
-            admin_password="Investica003",
+            admin_email=admin_email,
+            admin_password=admin_password,
         )
 
         first_aid, _ = Skill.objects.get_or_create(
@@ -35,7 +41,13 @@ class Command(BaseCommand):
             metadata={"demo": True, "magnitude": 5.2},
         )
 
-        admin = UserRepository().get_by_email("InvesticaCO@gmail.com")
+        admin = UserRepository().get_by_email(admin_email)
+        if admin is None:
+            raise RuntimeError(
+                f"Admin user {admin_email!r} was not found after seed_all. "
+                "Check ADMIN_EMAIL / ADMIN_PASSWORD in .env."
+            )
+
         coordinator_role = Role.objects.get(slug="coordinator")
         UserRepository().assign_role(admin, coordinator_role)
 
@@ -53,3 +65,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Demo disaster: {disaster.title}"))
         self.stdout.write(self.style.SUCCESS(f"Demo mission: {mission.title}"))
         self.stdout.write(self.style.SUCCESS(f"Skills: {first_aid.name}, {logistics.name}"))
+        if not os.environ.get("ADMIN_PASSWORD"):
+            self.stdout.write(
+                self.style.WARNING(
+                    "ADMIN_PASSWORD was not set; development fallback credentials were used."
+                )
+            )

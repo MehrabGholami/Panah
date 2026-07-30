@@ -2,9 +2,12 @@ import ClearOutlinedIcon from '@mui/icons-material/ClearOutlined';
 import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
+import PersonSearchOutlinedIcon from '@mui/icons-material/PersonSearchOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import {
   Alert,
+  Autocomplete,
+  Avatar,
   Box,
   Button,
   Chip,
@@ -20,14 +23,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { GhostButton, GlassCard, GradientButton, JalaliDateField } from '@/shared/components/ui';
 import { tableHeadSx } from '@/shared/styles/tableHeader';
-import type { AuditLog, PaginatedResponse } from '@/shared/types';
+import type { AccountUser, AuditLog, PaginatedResponse } from '@/shared/types';
 import { toPersianDigits } from '@/shared/utils/persianDigits';
 
 const actionLabels: Record<string, string> = {
@@ -50,6 +53,11 @@ const resourceTypeLabels: Record<string, string> = {
   report: 'گزارش',
   assignment: 'تکلیف',
   mission_application: 'درخواست مأموریت',
+  notification: 'اعلان',
+  role: 'نقش',
+  permission: 'دسترسی',
+  backup_run: 'بکاپ',
+  backup_restore: 'ری‌استور',
 };
 
 const roleLabels: Record<string, string> = {
@@ -58,12 +66,22 @@ const roleLabels: Record<string, string> = {
   volunteer: 'داوطلب',
 };
 
+/** Localize leftover English resource keys in API change summaries. */
+function formatChangeSummary(summary?: string | null) {
+  if (!summary?.trim()) return '—';
+  let text = summary;
+  for (const [key, label] of Object.entries(resourceTypeLabels)) {
+    text = text.replaceAll(key, label);
+  }
+  return text;
+}
+
 const PAGE_SIZE = 15;
 
 type AuditSearchFilters = {
   action: string;
   resource_type: string;
-  user: string;
+  user_id: string;
   ip_address: string;
   created_at_after: string | null;
   created_at_before: string | null;
@@ -73,7 +91,7 @@ type AuditSearchFilters = {
 const emptyAuditFilters: AuditSearchFilters = {
   action: '',
   resource_type: '',
-  user: '',
+  user_id: '',
   ip_address: '',
   created_at_after: null,
   created_at_before: null,
@@ -88,7 +106,7 @@ function buildAuditParams(filters: AuditSearchFilters, page: number) {
   };
   if (filters.action) params.action = filters.action;
   if (filters.resource_type) params.resource_type = filters.resource_type;
-  if (filters.user.trim()) params.user = filters.user.trim();
+  if (filters.user_id.trim()) params.user_id = filters.user_id.trim();
   if (filters.ip_address.trim()) params.ip_address = filters.ip_address.trim();
   if (filters.search.trim()) params.search = filters.search.trim();
   if (filters.created_at_after) params.created_at_after = `${filters.created_at_after}T00:00:00`;
@@ -100,12 +118,22 @@ function countActiveFilters(filters: AuditSearchFilters) {
   return [
     filters.action,
     filters.resource_type,
-    filters.user.trim(),
+    filters.user_id.trim(),
     filters.ip_address.trim(),
     filters.search.trim(),
     filters.created_at_after,
     filters.created_at_before,
   ].filter(Boolean).length;
+}
+
+function getUserDisplayName(user: AccountUser) {
+  const fullName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+  return fullName || user.email;
+}
+
+function getUserInitial(user: AccountUser) {
+  const name = getUserDisplayName(user);
+  return name.charAt(0).toUpperCase();
 }
 
 function getActionLabel(action: string): string {
@@ -319,6 +347,28 @@ export default function AuditLogsPage() {
   const [appliedFilters, setAppliedFilters] = useState<AuditSearchFilters>(emptyAuditFilters);
 
   const {
+    data: accountsData,
+    isLoading: accountsLoading,
+    isError: accountsError,
+  } = useQuery({
+    queryKey: ['accounts-users', 'audit-logs'],
+    queryFn: async () => {
+      const { data: response } = await apiClient.get<PaginatedResponse<AccountUser>>(
+        endpoints.accounts.users,
+        { params: { page_size: 200 } },
+      );
+      return response;
+    },
+  });
+
+  const accounts = accountsData?.results ?? [];
+  const selectedAccount = useMemo(() => {
+    const id = draftFilters.user_id.trim();
+    if (!id) return null;
+    return accounts.find((u) => u.id === id) ?? null;
+  }, [accounts, draftFilters.user_id]);
+
+  const {
     data: auditData,
     isLoading: auditLoading,
     isError: auditError,
@@ -354,6 +404,12 @@ export default function AuditLogsPage() {
     setAppliedFilters(emptyAuditFilters);
   };
 
+  const applyUserFilter = (user: AccountUser | null) => {
+    const userId = user?.id ?? '';
+    setDraftFilters((prev) => ({ ...prev, user_id: userId }));
+    setAppliedFilters((prev) => ({ ...prev, user_id: userId }));
+  };
+
   const updateDraftFilter = <K extends keyof AuditSearchFilters>(
     field: K,
     value: AuditSearchFilters[K],
@@ -374,6 +430,119 @@ export default function AuditLogsPage() {
       </Typography>
 
       {auditError && <Alert severity="error">{t('actions.error')}</Alert>}
+
+      <GlassCard
+        sx={{
+          p: { xs: 2, md: 2.5 },
+          mb: 2.5,
+          border: 1,
+          borderColor: selectedAccount ? 'rgba(34, 211, 238, 0.35)' : 'divider',
+          background: (theme) =>
+            theme.palette.mode === 'dark'
+              ? 'linear-gradient(135deg, rgba(34, 211, 238, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%)'
+              : 'linear-gradient(135deg, rgba(34, 211, 238, 0.05) 0%, rgba(99, 102, 241, 0.03) 100%)',
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          alignItems={{ xs: 'stretch', md: 'center' }}
+        >
+          <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+            <Box
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: 2,
+                display: 'grid',
+                placeItems: 'center',
+                bgcolor: 'rgba(34, 211, 238, 0.14)',
+                color: 'primary.main',
+                flexShrink: 0,
+              }}
+            >
+              <PersonSearchOutlinedIcon />
+            </Box>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="subtitle1" fontWeight={800}>
+                فیلتر بر اساس کاربر
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                یک حساب را انتخاب کنید تا فقط فعالیت‌های همان کاربر نمایش داده شود.
+              </Typography>
+              {selectedAccount ? (
+                <Chip
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  avatar={
+                    <Avatar sx={{ width: 22, height: 22, fontSize: 12 }}>
+                      {getUserInitial(selectedAccount)}
+                    </Avatar>
+                  }
+                  label={`${getUserDisplayName(selectedAccount)} — ${selectedAccount.email}`}
+                  onDelete={() => applyUserFilter(null)}
+                  sx={{ mt: 1, maxWidth: '100%', fontWeight: 700 }}
+                />
+              ) : null}
+            </Box>
+          </Stack>
+
+          <Autocomplete
+            sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0 }}
+            loading={accountsLoading}
+            options={accounts}
+            value={selectedAccount}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            getOptionLabel={(option) => getUserDisplayName(option)}
+            filterOptions={(options, state) => {
+              const q = state.inputValue.trim().toLowerCase();
+              if (!q) return options;
+              return options.filter((u) => {
+                const hay = `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase();
+                return hay.includes(q);
+              });
+            }}
+            onChange={(_, value) => applyUserFilter(value)}
+            renderOption={(props, option) => {
+              const { key, ...rest } = props as typeof props & { key?: string };
+              return (
+                <Box
+                  component="li"
+                  key={key ?? option.id}
+                  {...rest}
+                  sx={{ display: 'flex', gap: 1.25, alignItems: 'center' }}
+                >
+                  <Avatar sx={{ width: 32, height: 32, fontSize: 13, bgcolor: 'primary.main' }}>
+                    {getUserInitial(option)}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="body2" fontWeight={700} noWrap>
+                      {getUserDisplayName(option)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" noWrap>
+                      {option.email}
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                fullWidth
+                inputProps={{
+                  ...params.inputProps,
+                  'aria-label': 'انتخاب کاربر',
+                }}
+              />
+            )}
+            noOptionsText={accountsError ? 'خطا در بارگذاری کاربران' : 'کاربری یافت نشد'}
+            clearOnEscape
+          />
+        </Stack>
+      </GlassCard>
 
       <GlassCard sx={{ p: { xs: 2, md: 2.5 } }}>
         <AdvancedSearchToolbar
@@ -419,13 +588,36 @@ export default function AuditLogsPage() {
                   </MenuItem>
                 ))}
               </TextField>
-              <TextField
-                label="کاربر"
-                value={draftFilters.user}
-                onChange={(e) => updateDraftFilter('user', e.target.value)}
-                size="small"
-                fullWidth
-                placeholder="نام، نام خانوادگی یا ایمیل"
+              <Autocomplete
+                loading={accountsLoading}
+                options={accounts}
+                value={selectedAccount}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                getOptionLabel={(option) => getUserDisplayName(option)}
+                filterOptions={(options, state) => {
+                  const q = state.inputValue.trim().toLowerCase();
+                  if (!q) return options;
+                  return options.filter((u) => {
+                    const hay = `${u.first_name} ${u.last_name} ${u.email}`.toLowerCase();
+                    return hay.includes(q);
+                  });
+                }}
+                onChange={(_, value) => {
+                  setDraftFilters((prev) => ({ ...prev, user_id: value?.id ?? '' }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    size="small"
+                    fullWidth
+                    inputProps={{
+                      ...params.inputProps,
+                      'aria-label': 'کاربر',
+                    }}
+                  />
+                )}
+                noOptionsText={accountsError ? 'خطا در بارگذاری کاربران' : 'کاربری یافت نشد'}
+                clearOnEscape
               />
             </Stack>
 
@@ -535,7 +727,7 @@ export default function AuditLogsPage() {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" fontWeight={600}>
-                        {log.change_summary ?? '—'}
+                        {formatChangeSummary(log.change_summary)}
                       </Typography>
                     </TableCell>
                     <TableCell>

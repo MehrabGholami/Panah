@@ -17,6 +17,7 @@ export interface VolunteerProfileData {
   national_id?: string;
   city?: string;
   bio?: string;
+  gender?: 'female' | 'male' | 'unspecified';
   status?: string;
 }
 
@@ -26,6 +27,7 @@ export interface UpdateProfileRequest {
   last_name?: string;
   city?: string;
   bio?: string;
+  gender?: 'female' | 'male' | 'unspecified';
   education?: string;
   occupation?: string;
   interests?: string;

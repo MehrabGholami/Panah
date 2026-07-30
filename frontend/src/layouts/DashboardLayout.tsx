@@ -9,13 +9,14 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import HistoryIcon from '@mui/icons-material/History';
+import BackupOutlinedIcon from '@mui/icons-material/BackupOutlined';
+import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import LogoutIcon from '@mui/icons-material/Logout';
 import PersonIcon from '@mui/icons-material/Person';
-import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import {
   AppBar,
   Badge,
@@ -47,6 +48,7 @@ import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-rout
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { logout } from '@/app/slices/authSlice';
 import { toggleSidebar } from '@/app/slices/uiPreferencesSlice';
+import panahLogo from '@/assets/images/panah-logo.png';
 import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { ThemeToggle, UserAvatar } from '@/shared/components/ui';
@@ -130,6 +132,13 @@ export function DashboardLayout() {
       permission: 'missions.view',
     },
     {
+      label: t('nav.coordinatorMyMissions'),
+      path: '/missions/mine',
+      icon: <AssignmentIndOutlinedIcon />,
+      roles: ['coordinator'],
+      permission: 'missions.view',
+    },
+    {
       label: t('nav.availableMissions'),
       path: '/missions/available',
       icon: <ExploreOutlinedIcon />,
@@ -148,6 +157,13 @@ export function DashboardLayout() {
       icon: <PeopleIcon />,
       roles: ['admin', 'coordinator'],
       permission: 'volunteers.view',
+    },
+    {
+      label: t('nav.coordinationRequests'),
+      path: '/missions/coordinator-requests',
+      icon: <HowToRegOutlinedIcon />,
+      roles: ['admin'],
+      permission: 'missions.assign',
     },
     {
       label: t('nav.users'),
@@ -188,6 +204,13 @@ export function DashboardLayout() {
       roles: ['admin'],
       permission: 'audit.view',
     },
+    {
+      label: t('nav.opsBackup'),
+      path: '/admin/ops',
+      icon: <BackupOutlinedIcon />,
+      roles: ['admin'],
+      permission: 'ops.view_backups',
+    },
   ];
 
   const visibleNav = navItems.filter((item) => {
@@ -195,6 +218,9 @@ export function DashboardLayout() {
       return false;
     }
     if (item.path === '/my-missions' && hasAnyRole(['admin', 'coordinator'])) {
+      return false;
+    }
+    if (item.path === '/missions/mine' && hasAnyRole(['admin'])) {
       return false;
     }
     if (item.path === '/missions/available' && hasAnyRole(['admin', 'coordinator'])) {
@@ -259,19 +285,18 @@ export function DashboardLayout() {
         }}
       >
         <Box
+          component="img"
+          src={panahLogo}
+          alt={t('appName')}
           sx={{
             width: 40,
             height: 40,
             flexShrink: 0,
-            borderRadius: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #22D3EE 0%, #818CF8 100%)',
+            objectFit: 'contain',
+            display: 'block',
+            filter: theme.palette.mode === 'dark' ? 'invert(1) brightness(1.05)' : 'none',
           }}
-        >
-          <VolunteerActivismIcon sx={{ color: '#0B0F1A', fontSize: 22 }} />
-        </Box>
+        />
         <Box
           sx={{
             minWidth: 0,
@@ -315,12 +340,26 @@ export function DashboardLayout() {
     </Box>
   );
 
+  const navPaths = visibleNav.map((item) => item.path);
+
   const sidebar = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
       {sidebarHeader}
       <List sx={{ flex: 1, px: 1, py: 1.5, overflowY: 'auto' }}>
         {visibleNav.map((item) => {
-          const active = location.pathname.startsWith(item.path);
+          const pathname = location.pathname;
+          const exact = pathname === item.path;
+          const nested = pathname.startsWith(`${item.path}/`);
+          const hasMoreSpecificMatch = nested
+            ? navPaths.some(
+                (path) =>
+                  path !== item.path &&
+                  (path === pathname ||
+                    (path.startsWith(`${item.path}/`) &&
+                      (pathname === path || pathname.startsWith(`${path}/`)))),
+              )
+            : false;
+          const active = exact || (nested && !hasMoreSpecificMatch);
           const button = (
             <ListItemButton
               key={item.path}
@@ -623,9 +662,11 @@ export function DashboardLayout() {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 1.5, sm: 2, md: 3 },
           width: { md: `calc(100% - ${sidebarWidth}px)` },
           mt: `${APP_BAR_HEIGHT}px`,
+          minWidth: 0,
+          overflowX: 'hidden',
           transition: sidebarTransition(theme),
         }}
       >

@@ -21,6 +21,8 @@ import {
   Grid2 as Grid,
   Stack,
   Typography,
+  alpha,
+  useTheme,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -44,14 +46,14 @@ import type {
 import { toPersianDigits } from '@/shared/utils/persianDigits';
 
 const KPI_ACCENTS = [
-  'rgba(34, 211, 238, 0.14)',
-  'rgba(129, 140, 248, 0.14)',
-  'rgba(251, 191, 36, 0.14)',
-  'rgba(52, 211, 153, 0.14)',
-  'rgba(248, 113, 113, 0.14)',
-  'rgba(251, 146, 60, 0.14)',
-  'rgba(167, 139, 250, 0.14)',
-  'rgba(56, 189, 248, 0.14)',
+  '#22D3EE',
+  '#818CF8',
+  '#FBBF24',
+  '#34D399',
+  '#F87171',
+  '#FB923C',
+  '#A78BFA',
+  '#38BDF8',
 ];
 
 interface KpiCardProps {
@@ -63,18 +65,33 @@ interface KpiCardProps {
 }
 
 function KpiCard({ title, value, icon, accent, to }: KpiCardProps) {
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+  const surface = theme.palette.background.elevated ?? theme.palette.background.paper;
+
   const content = (
     <GlassCard
       sx={{
         p: 2.5,
         height: '100%',
-        background: `linear-gradient(135deg, ${accent} 0%, transparent 72%)`,
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        position: 'relative',
+        overflow: 'hidden',
+        border: '1px solid',
+        borderColor: alpha(accent, isDark ? 0.28 : 0.2),
+        bgcolor: isDark ? surface : 'background.paper',
+        background: isDark
+          ? `linear-gradient(145deg, ${alpha(accent, 0.22)} 0%, ${alpha(accent, 0.08)} 42%, ${surface} 100%)`
+          : `linear-gradient(135deg, ${alpha(accent, 0.16)} 0%, ${alpha(accent, 0.04)} 55%, #FFFFFF 100%)`,
+        boxShadow: isDark ? `inset 0 1px 0 ${alpha('#fff', 0.04)}` : 'none',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
         ...(to && {
           cursor: 'pointer',
           '&:hover': {
             transform: 'translateY(-2px)',
-            boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08)',
+            borderColor: alpha(accent, isDark ? 0.45 : 0.35),
+            boxShadow: isDark
+              ? `0 14px 32px ${alpha(accent, 0.14)}, inset 0 1px 0 ${alpha('#fff', 0.05)}`
+              : `0 12px 28px ${alpha('#0F172A', 0.08)}`,
           },
         }),
       }}
@@ -92,9 +109,11 @@ function KpiCard({ title, value, icon, accent, to }: KpiCardProps) {
           sx={{
             p: 1.25,
             borderRadius: 2,
-            bgcolor: 'rgba(34, 211, 238, 0.12)',
-            color: 'primary.main',
+            bgcolor: alpha(accent, isDark ? 0.2 : 0.12),
+            color: accent,
             flexShrink: 0,
+            border: '1px solid',
+            borderColor: alpha(accent, isDark ? 0.32 : 0.18),
           }}
         >
           {icon}
@@ -818,26 +837,6 @@ export default function DashboardPage() {
             {t('subtitle')}
           </Typography>
         </Box>
-
-        <GlassCard sx={{ p: 1.5, minWidth: { md: 280 } }}>
-          <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
-            {t('quickActions.title')}
-          </Typography>
-          <Stack direction="row" flexWrap="wrap" useFlexGap spacing={0.75}>
-            <Button component={RouterLink} to="/disasters" size="small" variant="outlined">
-              {t('quickActions.disasters')}
-            </Button>
-            <Button component={RouterLink} to="/missions" size="small" variant="outlined">
-              {t('quickActions.missions')}
-            </Button>
-            <Button component={RouterLink} to="/volunteers" size="small" variant="outlined">
-              {t('quickActions.volunteers')}
-            </Button>
-            <Button component={RouterLink} to="/notifications" size="small" variant="outlined">
-              {t('quickActions.notifications')}
-            </Button>
-          </Stack>
-        </GlassCard>
       </Stack>
 
       {isError && (

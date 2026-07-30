@@ -44,6 +44,14 @@ export const endpoints = {
     apply: (id: string) => `${API_BASE}/missions/${id}/apply/`,
     applications: (id: string) => `${API_BASE}/missions/${id}/applications/`,
     applicationsInbox: `${API_BASE}/missions/applications/inbox/`,
+    requestCoordination: (id: string) => `${API_BASE}/missions/${id}/request-coordination/`,
+    assignCoordinator: (id: string) => `${API_BASE}/missions/${id}/assign-coordinator/`,
+    coordinatorRequests: (id: string) => `${API_BASE}/missions/${id}/coordinator-requests/`,
+    coordinatorRequestsInbox: `${API_BASE}/missions/coordinator-requests/inbox/`,
+    approveCoordinatorRequest: (id: string, requestId: string) =>
+      `${API_BASE}/missions/${id}/coordinator-requests/${requestId}/approve/`,
+    rejectCoordinatorRequest: (id: string, requestId: string) =>
+      `${API_BASE}/missions/${id}/coordinator-requests/${requestId}/reject/`,
     approveApplication: (id: string, applicationId: string) =>
       `${API_BASE}/missions/${id}/applications/${applicationId}/approve/`,
     rejectApplication: (id: string, applicationId: string) =>
@@ -53,8 +61,12 @@ export const endpoints = {
   },
   assignments: {
     my: `${API_BASE}/assignments/my/`,
+    list: `${API_BASE}/assignments/`,
     accept: (id: string) => `${API_BASE}/assignments/${id}/accept/`,
     decline: (id: string) => `${API_BASE}/assignments/${id}/decline/`,
+    tasks: (assignmentId: string) => `${API_BASE}/assignments/${assignmentId}/tasks/`,
+    taskDetail: (taskId: string) => `${API_BASE}/assignments/tasks/${taskId}/`,
+    taskStatus: (taskId: string) => `${API_BASE}/assignments/tasks/${taskId}/status/`,
   },
   reports: {
     list: `${API_BASE}/reports/`,
@@ -81,6 +93,14 @@ export const endpoints = {
   },
   auditLogs: {
     list: `${API_BASE}/audit-logs/`,
+  },
+  ops: {
+    backups: `${API_BASE}/ops/backups/`,
+    backupStatus: `${API_BASE}/ops/backups/status/`,
+    backupSettings: `${API_BASE}/ops/backups/settings/`,
+    backupRun: `${API_BASE}/ops/backups/run/`,
+    backupDetail: (id: string) => `${API_BASE}/ops/backups/${id}/`,
+    backupRestore: (id: string) => `${API_BASE}/ops/backups/${id}/restore/`,
   },
 } as const;
 

@@ -159,12 +159,25 @@ export default function TicketDetailPage() {
         <Typography>{t('actions.loading', { ns: 'common' })}</Typography>
       ) : ticket ? (
         <Stack spacing={3}>
-          <GlassCard sx={{ p: 3 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
-              <Typography variant="h5" fontWeight={700}>
+          <GlassCard sx={{ p: { xs: 2, sm: 3 } }}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              justifyContent="space-between"
+              alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+              spacing={1.5}
+              sx={{ mb: 2 }}
+            >
+              <Typography variant="h5" fontWeight={700} sx={{ wordBreak: 'break-word' }}>
                 {ticket.title}
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack
+                direction="row"
+                spacing={1}
+                alignItems="center"
+                useFlexGap
+                flexWrap="wrap"
+                sx={{ flexShrink: 0 }}
+              >
                 {ticket.is_staff_message && (
                   <Chip
                     size="small"

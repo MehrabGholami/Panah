@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
-import os
 
 from accounts.application.services.seed_service import SeedService
+from common.utils.env_credentials import get_admin_email, get_admin_password
 
 
 class Command(BaseCommand):
@@ -10,19 +10,21 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--admin-email",
-            default=os.environ.get("ADMIN_EMAIL", "InvesticaCO@gmail.com"),
-            help="Admin user email address.",
+            default=None,
+            help="Admin user email address (defaults to ADMIN_EMAIL from the environment).",
         )
         parser.add_argument(
             "--admin-password",
-            default=os.environ.get("ADMIN_PASSWORD", "Investica003"),
-            help="Admin user password.",
+            default=None,
+            help="Admin user password (defaults to ADMIN_PASSWORD from the environment).",
         )
 
     def handle(self, *args, **options):
+        admin_email = options["admin_email"] or get_admin_email()
+        admin_password = options["admin_password"] or get_admin_password()
         result = SeedService().seed_all(
-            admin_email=options["admin_email"],
-            admin_password=options["admin_password"],
+            admin_email=admin_email,
+            admin_password=admin_password,
         )
         self.stdout.write(self.style.SUCCESS(f"Seeded {result['permissions']} permissions"))
         self.stdout.write(self.style.SUCCESS(f"Seeded {result['roles']} roles"))

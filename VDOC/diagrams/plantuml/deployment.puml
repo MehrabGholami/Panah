@@ -1,0 +1,141 @@
+@startuml deployment
+' دیاگرام استقرار سامانه پناه
+' نمای گره‌های اجرایی، مصنوعات قابل استقرار و کانال‌های ارتباطی
+
+title دیاگرام استقرار سامانه پناه بر پایه Docker Compose
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Tahoma"
+skinparam linetype ortho
+skinparam node {
+  BackgroundColor #FBFDFC
+  BorderColor #5F6B7A
+}
+skinparam component {
+  BackgroundColor #F4FBF7
+  BorderColor #0B6E4F
+  FontColor #0A2B20
+}
+skinparam database {
+  BackgroundColor #FFF8E1
+  BorderColor #B26A00
+}
+skinparam artifact {
+  BackgroundColor #E8F1FF
+  BorderColor #2A5DA8
+}
+
+node "دستگاه کاربر" as CLIENT {
+  component "مرورگر وب\nپشتیبانی از ES2020 و RTL" as BROWSER
+  artifact "دارایی‌های کلاینت\nindex.html و بسته‌های JS و CSS" as ASSETS
+  BROWSER ..> ASSETS
+}
+
+cloud "شبکه اینترنت یا اینترانت سازمانی" as NET {
+  component "کارساز نام\npanah.example.ir" as DNS
+  component "دیوار آتش سازمانی\nاجازه ورود روی درگاه ۸۰ و ۴۴۳" as FW
+}
+
+node "کارساز میزبان لینوکس\nDocker Engine و Docker Compose" as HOST {
+
+  node "کانتینر volunteer-management-nginx\nتصویر nginx:alpine" as NNGX {
+    component "Nginx\nپایان‌دهی TLS و پروکسی معکوس" as CNGX
+    artifact "nginx.conf و conf.d و snippets" as ANGX
+    CNGX ..> ANGX
+  }
+
+  node "کانتینر volunteer-management-frontend\nساخت Vite" as NFE {
+    component "کلاینت React 18 و TypeScript\nMaterial UI با پیکربندی راست‌چین" as CFE
+    artifact "بسته تولیدی dist" as AFE
+    CFE ..> AFE
+  }
+
+  node "کانتینر volunteer-management-backend\nPython 3 و Django" as NBE {
+    component "سرویس Django REST Framework\nدرگاه درونی ۸۰۰۰" as CBE
+    component "میان‌افزار حسابرسی و امنیت" as CMW
+    artifact "کد کاربرد و مهاجرت‌های پایگاه داده" as ABE
+    artifact "فایل‌های ایستای گردآوری‌شده" as ASTATIC
+    CBE ..> CMW
+    CBE ..> ABE
+    CBE ..> ASTATIC
+  }
+
+  node "کانتینر volunteer-management-celery" as NCW {
+    component "کارگر Celery\nپردازش وظایف ایمیل و اعلان" as CCW
+  }
+
+  node "کانتینر volunteer-management-celery-beat" as NCB {
+    component "زمان‌بند Celery Beat\nوظایف دوره‌ای" as CCB
+    artifact "پرونده زمان‌بندی celerybeat-schedule" as ACB
+    CCB ..> ACB
+  }
+
+  node "کانتینر volunteer-management-postgres\nتصویر postgres:17-alpine" as NPG {
+    database "پایگاه داده volunteer_management\nدرگاه درونی ۵۴۳۲" as DPG
+  }
+
+  node "کانتینر volunteer-management-redis\nتصویر redis:7-alpine" as NRD {
+    database "Redis با حالت appendonly\nدرگاه درونی ۶۳۷۹" as DRD
+  }
+
+  node "کانتینر volunteer-management-mailhog" as NMH {
+    component "MailHog\nدرگاه SMTP ۱۰۲۵ و رابط وب ۸۰۲۵" as CMH
+  }
+
+  node "کانتینر volunteer-management-pgadmin" as NPGA {
+    component "pgAdmin 4\nرابط وب روی درگاه ۵۰۵۰" as CPGA
+  }
+
+  database "حجم volunteer-management-postgres-data" as VPG
+  database "حجم volunteer-management-redis-data" as VRD
+  database "حجم volunteer-management-pgadmin-data" as VPGA
+  folder "اتصال میزبان media\nتصویر نمایه و پیوست گزارش" as VMEDIA
+  folder "اتصال میزبان static\nفایل‌های ایستا" as VSTATIC
+  folder "اتصال میزبان logs\nسیاهه کاربرد و Nginx" as VLOG
+}
+
+cloud "سرویس ایمیل سازمانی\nمحیط بهره‌برداری" as SMTP
+
+BROWSER --> DNS : درخواست تحلیل نام
+DNS --> FW
+FW --> CNGX : HTTPS روی درگاه ۴۴۳\nTLS 1.2 و بالاتر
+
+CNGX --> CFE : HTTP\nمسیر ریشه و دارایی‌های کلاینت
+CNGX --> CBE : HTTP\nمسیر api/v1 و admin و api/docs
+CNGX --> VSTATIC : خواندن فایل ایستا
+CNGX --> VMEDIA : خواندن فایل رسانه
+CNGX --> VLOG : نوشتن سیاهه دسترسی و خطا
+
+CBE --> DPG : TCP ۵۴۳۲\nDjango ORM با استخر اتصال
+CBE --> DRD : TCP ۶۳۷۹\nحافظه نهان و انتشار وظیفه
+CBE --> VMEDIA : نوشتن و خواندن فایل
+CBE --> VLOG : نوشتن سیاهه کاربرد
+
+CCW --> DRD : دریافت وظیفه از صف
+CCW --> DPG : TCP ۵۴۳۲\nخواندن و نوشتن نتیجه
+CCW --> CMH : SMTP ۱۰۲۵\nمحیط توسعه
+CCW --> SMTP : SMTP ۵۸۷ با STARTTLS\nمحیط بهره‌برداری
+CCB --> DRD : انتشار وظیفه زمان‌بندی‌شده
+
+DPG --> VPG : داده پایدار
+DRD --> VRD : داده پایدار
+CPGA --> VPGA : تنظیمات
+CPGA --> DPG : TCP ۵۴۳۲\nدسترسی مدیریتی محدود به شبکه درونی
+
+note right of HOST
+  ملاحظات استقرار
+  همه کانتینرها روی شبکه پل volunteer-management-net قرار دارند
+  تنها Nginx و ابزارهای بهره‌برداری درگاه میزبان منتشر می‌کنند
+  در محیط بهره‌برداری MailHog و pgAdmin غیرفعال می‌شوند
+  بررسی سلامت برای Postgres و Redis و Backend و Nginx تعریف شده است
+  سیاست راه‌اندازی مجدد unless-stopped برای همه سرویس‌ها فعال است
+end note
+
+note bottom of NPG
+  راهبرد پشتیبان‌گیری
+  پشتیبان کامل شبانه با pg_dump و نگه‌داری سی روزه
+  آزمون بازیابی ماهانه روی محیط آزمون
+end note
+
+@enduml

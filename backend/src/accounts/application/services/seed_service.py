@@ -19,11 +19,14 @@ DEFAULT_PERMISSIONS = [
     ("missions.view", "View missions", "missions"),
     ("missions.create", "Create missions", "missions"),
     ("missions.assign", "Assign missions", "missions"),
+    ("missions.request_coordinate", "Request mission coordination", "missions"),
     ("missions.apply", "Apply to missions", "missions"),
     ("assignments.view", "View assignments", "assignments"),
     ("assignments.manage", "Manage assignments", "assignments"),
     ("assignments.accept", "Accept assignments", "assignments"),
     ("assignments.decline", "Decline assignments", "assignments"),
+    ("assignments.manage_tasks", "Manage assignment tasks", "assignments"),
+    ("assignments.report_task", "Report assignment task status", "assignments"),
     ("reports.view", "View reports", "reports"),
     ("reports.submit", "Submit reports", "reports"),
     ("notifications.view", "View notifications", "notifications"),
@@ -35,20 +38,31 @@ DEFAULT_PERMISSIONS = [
     ("accounts.manage_users", "Manage users", "accounts"),
     ("accounts.view_users", "View users", "accounts"),
     ("accounts.manage_roles", "Manage roles", "accounts"),
+    ("ops.view_backups", "View backups", "ops"),
+    ("ops.run_backup", "Run backup", "ops"),
 ]
 
 ROLE_PERMISSIONS = {
-    SystemRole.ADMIN: [p[0] for p in DEFAULT_PERMISSIONS],
+    SystemRole.ADMIN: [
+        p[0]
+        for p in DEFAULT_PERMISSIONS
+        if p[0]
+        not in {
+            "missions.request_coordinate",
+            "assignments.manage_tasks",
+            "assignments.report_task",
+        }
+    ],
     SystemRole.COORDINATOR: [
         "volunteers.view",
+        # View disasters only — creating/updating crises is an admin responsibility.
         "disasters.view",
-        "disasters.create",
-        "disasters.update",
         "missions.view",
         "missions.create",
-        "missions.assign",
+        "missions.request_coordinate",
         "assignments.view",
         "assignments.manage",
+        "assignments.manage_tasks",
         "reports.view",
         "reports.submit",
         "notifications.view",
@@ -64,6 +78,7 @@ ROLE_PERMISSIONS = {
         "assignments.view",
         "assignments.accept",
         "assignments.decline",
+        "assignments.report_task",
         "reports.submit",
         "notifications.view",
         "tickets.view",

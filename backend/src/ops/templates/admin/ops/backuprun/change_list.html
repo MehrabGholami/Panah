@@ -1,0 +1,76 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="row mb-3">
+  <div class="col-12">
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title mb-0">
+          <i class="fas fa-database mr-1"></i>
+          Backup &amp; Restore
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3 mb-2">
+            <div class="small text-muted">Last status</div>
+            <div class="h5 mb-0">
+              {% if backup_summary.last_status %}
+                <span class="badge {% if backup_summary.last_status == 'success' %}bg-success{% elif backup_summary.last_status == 'failed' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                  {{ backup_summary.last_status_label }}
+                </span>
+              {% else %}
+                <span class="text-muted">Unknown</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-md-3 mb-2">
+            <div class="small text-muted">Last successful backup</div>
+            <div class="font-weight-bold">{{ backup_summary.last_success_at|default:"—" }}</div>
+          </div>
+          <div class="col-md-3 mb-2">
+            <div class="small text-muted">Last backup size</div>
+            <div class="font-weight-bold">{{ backup_summary.last_size_label }}</div>
+          </div>
+          <div class="col-md-3 mb-2">
+            <div class="small text-muted">Retention</div>
+            <div class="font-weight-bold">{{ backup_summary.retention_days }} days</div>
+          </div>
+        </div>
+        <hr>
+        <div class="d-flex flex-wrap align-items-center" style="gap:0.5rem">
+          {% if run_backup_url %}
+          <a href="{{ run_backup_url }}" class="btn btn-success">
+            <i class="fas fa-play"></i> Run backup now
+          </a>
+          {% endif %}
+          {% if settings_url %}
+          <a href="{{ settings_url }}" class="btn btn-outline-primary">
+            <i class="fas fa-cog"></i> Schedule settings
+          </a>
+          {% endif %}
+          <span class="text-muted small ms-auto">
+            To restore, use the <strong>Restore</strong> column on a <strong>successful</strong> backup.
+          </span>
+        </div>
+        {% if backup_summary.last_error %}
+        <div class="alert alert-danger mt-3 mb-0">
+          <strong>Last run error:</strong> {{ backup_summary.last_error }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{{ block.super }}
+{% endblock %}
+
+{% block object-tools-items %}
+  {% if run_backup_url %}
+  <li>
+    <a href="{{ run_backup_url }}" class="btn btn-success">Run backup now</a>
+  </li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

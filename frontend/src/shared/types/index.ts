@@ -10,3 +10,4 @@ export * from './notifications';
 export * from './tickets';
 export * from './dashboard';
 export * from './admin';
+export * from './ops';

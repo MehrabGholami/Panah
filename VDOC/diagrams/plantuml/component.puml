@@ -1,0 +1,226 @@
+@startuml component
+' دیاگرام مؤلفه سامانه پناه
+' لایه‌بندی معماری تمیز در سرویس API و مؤلفه‌های کلاینت و زیرساخت
+
+title دیاگرام مؤلفه سامانه پناه
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Tahoma"
+skinparam linetype ortho
+skinparam component {
+  BackgroundColor #F4FBF7
+  BorderColor #0B6E4F
+  FontColor #0A2B20
+}
+skinparam interface {
+  BackgroundColor #E8F1FF
+  BorderColor #2A5DA8
+}
+skinparam database {
+  BackgroundColor #FFF8E1
+  BorderColor #B26A00
+}
+skinparam package {
+  BackgroundColor #FBFDFC
+  BorderColor #5F6B7A
+}
+
+actor "داوطلب" as VOL
+actor "هماهنگ‌کننده" as COORD
+actor "مدیر سامانه" as ADMIN
+
+package "لایه مرزی" {
+  [دروازه Nginx] as NGINX
+  note right of NGINX
+    پایان‌دهی TLS
+    پروکسی معکوس مسیر api/v1
+    سرو فایل static و media
+    محدودسازی نرخ درخواست
+    هدرهای امنیتی و CSP
+  end note
+}
+
+package "کلاینت وب React" {
+  [هسته مسیریابی و نگهبان دسترسی] as ROUTER
+  [مؤلفه‌های احراز هویت] as FEAUTH
+  [مؤلفه‌های داشبورد و نمودار] as FEDASH
+  [مؤلفه‌های رویداد بحران] as FEDIS
+  [مؤلفه‌های مأموریت و کارتابل درخواست] as FEMIS
+  [مؤلفه‌های داوطلب و مهارت] as FEVOL
+  [مؤلفه‌های گزارش و پیوست] as FEREP
+  [مؤلفه‌های اعلان و تیکت] as FENOT
+  [مؤلفه‌های مدیریت کاربر، نقش و حسابرسی] as FEADM
+  [کتابخانه مشترک رابط کاربری و سامانه طراحی] as FEUI
+  [کلاینت HTTP و لایه حافظه نهان پرسمان] as FEAPI
+  [زیرساخت بومی‌سازی فارسی و راست‌چین] as FEI18N
+}
+
+package "سرویس API بر پایه Django REST Framework" {
+
+  package "لایه ارائه" {
+    [نماها و مسیرهای REST] as APIVIEW
+    [سریالایزرها و اعتبارسنجی ورودی] as APISER
+    [کلاس‌های مجوز و سیاست دسترسی] as APIPERM
+    [میان‌افزار حسابرسی و شناسه همبستگی] as APIMW
+    [مولد مستندات OpenAPI] as APIDOC
+  }
+
+  package "لایه کاربرد" {
+    [سرویس احراز هویت و توکن] as SVCAUTH
+    [سرویس کاربران، نقش و مجوز] as SVCIAM
+    [سرویس داوطلب و مهارت] as SVCVOL
+    [سرویس رویداد بحران] as SVCDIS
+    [سرویس مأموریت] as SVCMIS
+    [سرویس درخواست همکاری] as SVCAPP
+    [سرویس تخصیص] as SVCASG
+    [سرویس گزارش] as SVCREP
+    [سرویس اعلان] as SVCNOT
+    [سرویس تیکت پشتیبانی] as SVCTIK
+    [سرویس داشبورد و شاخص‌ها] as SVCDASH
+    [سرویس حسابرسی] as SVCAUD
+  }
+
+  package "لایه دامنه" {
+    [موجودیت‌ها و اشیای مقداری] as DOMENT
+    [شمارش‌های وضعیت و قواعد گذار] as DOMENUM
+    [استثناهای دامنه] as DOMEXC
+  }
+
+  package "لایه زیرساخت" {
+    [مخازن داده و Django ORM] as INFREPO
+    [آداپتور حافظه نهان و صف Redis] as INFCACHE
+    [آداپتور ذخیره‌سازی فایل] as INFFILE
+    [آداپتور ارسال ایمیل] as INFMAIL
+    [تعریف وظایف Celery] as INFTASK
+  }
+}
+
+package "پردازش نامتقارن" {
+  [کارگر Celery] as WORKER
+  [زمان‌بند Celery Beat] as BEAT
+}
+
+database "PostgreSQL" as PG
+database "Redis" as RD
+folder "انبار فایل رسانه" as FS
+cloud "سرویس ایمیل SMTP" as SMTP
+
+interface "REST JSON روی HTTPS" as IREST
+interface "پروتکل صف وظیفه" as IQUEUE
+interface "پروتکل SMTP" as ISMTP
+
+VOL --> NGINX
+COORD --> NGINX
+ADMIN --> NGINX
+
+NGINX --> ROUTER : سرو دارایی کلاینت
+NGINX --> IREST
+IREST - APIVIEW
+
+ROUTER --> FEAUTH
+ROUTER --> FEDASH
+ROUTER --> FEDIS
+ROUTER --> FEMIS
+ROUTER --> FEVOL
+ROUTER --> FEREP
+ROUTER --> FENOT
+ROUTER --> FEADM
+FEAUTH ..> FEAPI
+FEDASH ..> FEAPI
+FEDIS ..> FEAPI
+FEMIS ..> FEAPI
+FEVOL ..> FEAPI
+FEREP ..> FEAPI
+FENOT ..> FEAPI
+FEADM ..> FEAPI
+FEAUTH ..> FEUI
+FEMIS ..> FEUI
+FEADM ..> FEUI
+FEUI ..> FEI18N
+FEAPI --> NGINX : فراخوانی REST با توکن Bearer
+
+APIVIEW --> APISER
+APIVIEW --> APIPERM
+APIVIEW ..> APIDOC
+APIMW ..> APIVIEW
+APIMW --> SVCAUD
+
+APIVIEW --> SVCAUTH
+APIVIEW --> SVCIAM
+APIVIEW --> SVCVOL
+APIVIEW --> SVCDIS
+APIVIEW --> SVCMIS
+APIVIEW --> SVCAPP
+APIVIEW --> SVCASG
+APIVIEW --> SVCREP
+APIVIEW --> SVCNOT
+APIVIEW --> SVCTIK
+APIVIEW --> SVCDASH
+
+SVCAPP --> SVCASG : ایجاد تخصیص پس از تأیید درخواست
+SVCASG --> SVCMIS : به‌روزرسانی ظرفیت و وضعیت مأموریت
+SVCAPP --> SVCNOT
+SVCASG --> SVCNOT
+SVCMIS --> SVCNOT
+SVCIAM --> SVCAUD
+SVCMIS --> SVCAUD
+SVCAPP --> SVCAUD
+SVCASG --> SVCAUD
+SVCREP --> SVCAUD
+
+SVCAUTH ..> DOMENT
+SVCMIS ..> DOMENT
+SVCMIS ..> DOMENUM
+SVCAPP ..> DOMENUM
+SVCASG ..> DOMENUM
+SVCVOL ..> DOMEXC
+SVCMIS ..> DOMEXC
+
+SVCAUTH --> INFREPO
+SVCIAM --> INFREPO
+SVCVOL --> INFREPO
+SVCDIS --> INFREPO
+SVCMIS --> INFREPO
+SVCAPP --> INFREPO
+SVCASG --> INFREPO
+SVCREP --> INFREPO
+SVCNOT --> INFREPO
+SVCTIK --> INFREPO
+SVCDASH --> INFREPO
+SVCAUD --> INFREPO
+
+SVCAUTH --> INFCACHE
+SVCDASH --> INFCACHE
+SVCNOT --> INFTASK
+SVCREP --> INFFILE
+SVCVOL --> INFFILE
+
+INFREPO --> PG
+INFCACHE --> RD
+INFFILE --> FS
+INFTASK --> IQUEUE
+IQUEUE - RD
+
+RD --> WORKER : تحویل وظیفه
+BEAT --> RD : انتشار وظیفه دوره‌ای
+WORKER --> INFMAIL
+WORKER --> INFREPO
+INFMAIL --> ISMTP
+ISMTP - SMTP
+NGINX --> FS : سرو مستقیم فایل رسانه و ایستا
+
+note bottom of INFREPO
+  دسترسی به پایگاه داده تنها از راه مخازن انجام می‌شود
+  لایه ارائه هیچ‌گاه به صورت مستقیم با ORM کار نمی‌کند
+end note
+
+note bottom of WORKER
+  وظایف نامتقارن
+  ارسال ایمیل اعلان
+  تولید اعلان انبوه برای مأموریت منتشرشده
+  یادآوری تخصیص بی‌پاسخ
+  محاسبه و گرم کردن حافظه نهان شاخص‌های داشبورد
+end note
+
+@enduml

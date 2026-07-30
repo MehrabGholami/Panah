@@ -21,6 +21,7 @@ export const darkTheme = createTheme({
       styleOverrides: {
         body: {
           backgroundColor: darkColors.background.default,
+          fontFamily: '"Vazirmatn", Tahoma, sans-serif',
           scrollbarColor: '#334155 transparent',
         },
         '*:focus-visible': {

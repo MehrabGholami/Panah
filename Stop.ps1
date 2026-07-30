@@ -1,29 +1,34 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    توقف Volunteer Management Platform
+    Stop Panah / Volunteer Management Platform
 #>
-$ErrorActionPreference = "Stop"
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$ErrorActionPreference = "Continue"
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $Root
 
 Write-Host ""
-Write-Host "  در حال توقف سامانه..." -ForegroundColor Cyan
+Write-Host "  Stopping platform..." -ForegroundColor Cyan
 Write-Host ""
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    Write-Host "Docker یافت نشد." -ForegroundColor Yellow
+    Write-Host "Docker not found. Nothing to stop." -ForegroundColor Yellow
     exit 0
 }
 
 docker compose down
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+$composeExit = $LASTEXITCODE
+if ($composeExit -ne 0) {
+    Write-Host "docker compose down failed (exit $composeExit)." -ForegroundColor Red
+    exit $composeExit
+}
 
 Write-Host ""
-Write-Host "  سامانه متوقف شد." -ForegroundColor Green
-Write-Host "  (داده‌ها و volumeها حفظ شده‌اند)" -ForegroundColor DarkGray
+Write-Host "  Platform stopped." -ForegroundColor Green
+Write-Host "  (Data and volumes were preserved.)" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "  برای اجرای مجدد: Start.bat" -ForegroundColor DarkGray
+Write-Host "  To start again: Start.bat" -ForegroundColor DarkGray
 Write-Host ""
+
+exit 0

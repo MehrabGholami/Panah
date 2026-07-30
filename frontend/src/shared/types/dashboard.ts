@@ -39,10 +39,13 @@ export interface DashboardCharts {
   disaster_status: DashboardChartSlice[];
   mission_status: DashboardChartSlice[];
   volunteer_pipeline: DashboardChartSlice[];
+  mission_application_status?: DashboardChartSlice[];
   assignment_status: DashboardChartSlice[];
   activity_trend: DashboardTrendPoint[];
   my_application_status?: DashboardChartSlice[];
   my_assignment_status?: DashboardChartSlice[];
+  skill_distribution?: DashboardChartSlice[];
+  gender_distribution?: DashboardChartSlice[];
 }
 
 export type DashboardScope = 'staff' | 'coordinator' | 'volunteer';

@@ -6,14 +6,17 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Grid2 as Grid,
+  Skeleton,
   Stack,
   TextField,
   Typography,
+  useTheme,
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -30,6 +33,100 @@ import { toPersianDigits } from '@/shared/utils/persianDigits';
 function formatDate(value?: string | null) {
   if (!value) return '—';
   return toPersianDigits(new Date(value).toLocaleDateString('fa-IR'));
+}
+
+function AvailableMissionsLoadingSkeleton() {
+  const { t } = useTranslation('common');
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
+
+  return (
+    <Box aria-busy="true" aria-live="polite">
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1.25}
+        sx={{
+          mb: 2,
+          px: 1.5,
+          py: 1.1,
+          borderRadius: 2.5,
+          width: 'fit-content',
+          bgcolor: isDark ? 'rgba(34, 211, 238, 0.08)' : 'rgba(34, 211, 238, 0.07)',
+          border: `1px solid ${isDark ? 'rgba(34, 211, 238, 0.22)' : 'rgba(34, 211, 238, 0.2)'}`,
+        }}
+      >
+        <CircularProgress size={18} thickness={5} />
+        <Typography variant="body2" fontWeight={600} color="text.secondary">
+          {t('actions.loading')}
+        </Typography>
+      </Stack>
+
+      <Grid container spacing={2}>
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Grid key={index} size={{ xs: 12, md: 6, lg: 4 }}>
+            <GlassCard
+              sx={{
+                p: 2.25,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+                position: 'relative',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  inset: 0,
+                  background: isDark
+                    ? 'linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.04) 50%, transparent 75%)'
+                    : 'linear-gradient(110deg, transparent 25%, rgba(255,255,255,0.55) 50%, transparent 75%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'missionCardShimmer 1.6s ease-in-out infinite',
+                  pointerEvents: 'none',
+                },
+                '@keyframes missionCardShimmer': {
+                  '0%': { backgroundPosition: '120% 0' },
+                  '100%': { backgroundPosition: '-120% 0' },
+                },
+                animation: 'missionCardFadeIn 0.45s ease both',
+                animationDelay: `${index * 70}ms`,
+                '@keyframes missionCardFadeIn': {
+                  from: { opacity: 0, transform: 'translateY(8px)' },
+                  to: { opacity: 1, transform: 'translateY(0)' },
+                },
+              }}
+            >
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1.25 }}>
+                <Skeleton variant="text" width="62%" height={28} sx={{ borderRadius: 1 }} />
+                <Skeleton variant="rounded" width={64} height={24} sx={{ borderRadius: 999 }} />
+              </Stack>
+
+              <Skeleton variant="text" width="94%" sx={{ mb: 0.4 }} />
+              <Skeleton variant="text" width="78%" sx={{ mb: 0.4 }} />
+              <Skeleton variant="text" width="54%" sx={{ mb: 1.5 }} />
+
+              <Stack spacing={0.85} sx={{ mb: 1.75 }}>
+                <Skeleton variant="text" width="72%" height={18} />
+                <Skeleton variant="text" width="58%" height={18} />
+                <Skeleton variant="text" width={120} height={18} />
+              </Stack>
+
+              <Stack direction="row" spacing={0.75} sx={{ mb: 1.75 }}>
+                <Skeleton variant="rounded" width={68} height={24} sx={{ borderRadius: 999 }} />
+                <Skeleton variant="rounded" width={56} height={24} sx={{ borderRadius: 999 }} />
+                <Skeleton variant="rounded" width={74} height={24} sx={{ borderRadius: 999 }} />
+              </Stack>
+
+              <Stack direction="row" spacing={1}>
+                <Skeleton variant="rounded" height={36} sx={{ flex: 1, borderRadius: 2 }} />
+                <Skeleton variant="rounded" height={36} sx={{ flex: 1, borderRadius: 2 }} />
+              </Stack>
+            </GlassCard>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+  );
 }
 
 function getApplicationBadge(
@@ -107,7 +204,7 @@ export default function AvailableMissionsPage() {
       {isError && <Alert severity="error">{t('actions.error', { ns: 'common' })}</Alert>}
 
       {isLoading ? (
-        <Typography>{t('actions.loading', { ns: 'common' })}</Typography>
+        <AvailableMissionsLoadingSkeleton />
       ) : missions.length === 0 ? (
         <Alert severity="info">{t('noAvailableMissions')}</Alert>
       ) : (

@@ -1,0 +1,65 @@
+%% دیاگرام وضعیت مأموریت در سامانه پناه
+%% مقادیر وضعیت برگرفته از شمارش MissionStatus است
+%% draft, published, in_progress, completed, closed
+stateDiagram-v2
+    direction TB
+
+    state "منتشرشده" as published
+
+    [*] --> draft : ایجاد مأموریت توسط هماهنگ‌کننده
+
+    draft : پیش‌نویس
+    draft : مأموریت فقط برای هماهنگ‌کننده و مدیر قابل مشاهده است
+    draft : ویرایش کامل همه فیلدها مجاز است
+
+    in_progress : در حال اجرا
+    in_progress : ظرفیت نیرو تکمیل شده و عملیات میدانی آغاز شده است
+
+    completed : تکمیل‌شده
+    completed : اجرای میدانی پایان یافته و گزارش‌دهی در جریان است
+
+    closed : بسته‌شده
+    closed : گزارش بازبینی شده و پرونده مأموریت نهایی است
+
+    cancelled : لغوشده
+    cancelled : مأموریت پیش از اجرا یا در میانه اجرا متوقف شده است
+
+    draft --> draft : ویرایش اطلاعات پایه و مهارت‌های مورد نیاز
+    draft --> published : انتشار مأموریت با شرط تکمیل اطلاعات الزامی
+    draft --> cancelled : لغو پیش از انتشار
+
+    published --> published : ویرایش محدود شرح و ملاحظات
+    published --> draft : بازگردانی به پیش‌نویس در صورت نبود درخواست تأییدشده
+    published --> in_progress : تکمیل ظرفیت نیرو یا فرارسیدن زمان شروع
+    published --> cancelled : لغو مأموریت و اطلاع‌رسانی به داوطلبان
+
+    in_progress --> completed : تعیین وضعیت نهایی همه تخصیص‌ها
+    in_progress --> cancelled : توقف عملیات به دلیل شرایط ایمنی
+
+    completed --> closed : بازبینی و تأیید گزارش مأموریت
+    completed --> in_progress : بازگشایی برای تکمیل عملیات ناتمام
+
+    closed --> [*]
+    cancelled --> [*]
+
+    state published {
+        [*] --> accepting
+        accepting : پذیرش درخواست
+        accepting : فیلد allow_volunteer_applications فعال است
+        capacity_full : ظرفیت تکمیل
+        capacity_full : تعداد تخصیص فعال به required_volunteers رسیده است
+        accepting --> capacity_full : رسیدن شمار تخصیص‌ها به سقف
+        capacity_full --> accepting : آزادسازی ظرفیت پس از رد تخصیص
+    }
+
+    note right of draft
+        قواعد گذار
+        انتشار نیازمند مجوز missions.publish است
+        همه گذارها در جدول حسابرسی ثبت می‌شوند
+    end note
+
+    note right of closed
+        وضعیت پایانی
+        پس از بستن، ویرایش داده مأموریت مجاز نیست
+        داده مأموریت برای شاخص‌های داشبورد استفاده می‌شود
+    end note

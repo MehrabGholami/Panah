@@ -12,6 +12,7 @@ import usersFa from './locales/fa/users.json';
 import reportsFa from './locales/fa/reports.json';
 import notificationsFa from './locales/fa/notifications.json';
 import disastersFa from './locales/fa/disasters.json';
+import opsFa from './locales/fa/ops.json';
 
 void i18n.use(initReactI18next).init({
   resources: {
@@ -28,6 +29,7 @@ void i18n.use(initReactI18next).init({
       users: usersFa,
       reports: reportsFa,
       notifications: notificationsFa,
+      ops: opsFa,
     },
   },
   lng: 'fa',

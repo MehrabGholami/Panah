@@ -478,8 +478,19 @@ export default function ReportsPage() {
               </Stack>
             </Box>
 
-            <TableContainer sx={{ px: { xs: 0.5, md: 1 } }}>
-              <Table sx={{ minWidth: 980, tableLayout: 'fixed' }}>
+            <TableContainer
+              sx={{
+                px: { xs: 0.5, md: 1 },
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              <Table
+                sx={{
+                  minWidth: { xs: 640, md: 980 },
+                  tableLayout: 'fixed',
+                }}
+              >
                 <TableHead sx={tableHeadSx}>
                   <TableRow>
                     <TableCell sx={{ width: '20%' }}>{t('table.mission')}</TableCell>

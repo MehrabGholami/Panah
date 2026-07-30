@@ -192,11 +192,22 @@ export function MissionApplicationsTab() {
                 '& .MuiOutlinedInput-root': { bgcolor: 'background.paper' },
               }}
             />
-            <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+            <Stack
+              direction="row"
+              spacing={1}
+              useFlexGap
+              flexWrap="wrap"
+              sx={{ flexShrink: 0, width: { xs: '100%', sm: 'auto' } }}
+            >
               <GradientButton
                 startIcon={<SearchOutlinedIcon />}
                 onClick={applySearch}
-                sx={{ height: 40, minWidth: 112, borderRadius: 2 }}
+                sx={{
+                  height: 40,
+                  minWidth: { xs: 0, sm: 112 },
+                  flex: { xs: 1, sm: 'none' },
+                  borderRadius: 2,
+                }}
               >
                 {t('actions.search', { ns: 'common' })}
               </GradientButton>
@@ -204,7 +215,12 @@ export function MissionApplicationsTab() {
                 startIcon={<ClearOutlinedIcon />}
                 onClick={clearSearch}
                 disabled={!draftSearch && !appliedSearch}
-                sx={{ height: 40, minWidth: 112, borderRadius: 2 }}
+                sx={{
+                  height: 40,
+                  minWidth: { xs: 0, sm: 112 },
+                  flex: { xs: 1, sm: 'none' },
+                  borderRadius: 2,
+                }}
               >
                 پاک کردن
               </GhostButton>
@@ -212,8 +228,8 @@ export function MissionApplicationsTab() {
           </Stack>
         </Box>
 
-        <TableContainer>
-          <Table>
+        <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <Table sx={{ minWidth: 720 }}>
             <TableHead sx={tableHeadSx}>
               <TableRow>
                 <TableCell width={56} />

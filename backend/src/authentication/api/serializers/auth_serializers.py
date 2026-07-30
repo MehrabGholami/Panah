@@ -38,6 +38,10 @@ class VolunteerProfileMeSerializer(serializers.Serializer):
     national_id = serializers.CharField(read_only=True)
     city = serializers.CharField(required=False, allow_blank=True)
     bio = serializers.CharField(required=False, allow_blank=True)
+    gender = serializers.ChoiceField(
+        choices=["female", "male", "unspecified"],
+        required=False,
+    )
     status = serializers.CharField(read_only=True)
 
 
@@ -47,6 +51,10 @@ class ProfileUpdateSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     city = serializers.CharField(max_length=100, required=False, allow_blank=True)
     bio = serializers.CharField(required=False, allow_blank=True)
+    gender = serializers.ChoiceField(
+        choices=["female", "male", "unspecified"],
+        required=False,
+    )
     education = serializers.CharField(max_length=255, required=False, allow_blank=True)
     occupation = serializers.CharField(max_length=150, required=False, allow_blank=True)
     interests = serializers.CharField(required=False, allow_blank=True)

@@ -53,6 +53,8 @@ class TicketReply(BaseModel):
     class Meta:
         db_table = "tickets_reply"
         ordering = ["created_at"]
+        verbose_name = "Ticket reply"
+        verbose_name_plural = "Ticket replies"
 
     def __str__(self):
         return f"Reply on {self.ticket_id} by {self.author_id}"

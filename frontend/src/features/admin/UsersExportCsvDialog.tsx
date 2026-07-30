@@ -229,6 +229,8 @@ export function UsersExportCsvDialog({
         sx: {
           borderRadius: 3.5,
           overflow: 'hidden',
+          m: { xs: 1.5, sm: 2 },
+          width: { xs: 'calc(100% - 24px)', sm: undefined },
         },
       }}
     >

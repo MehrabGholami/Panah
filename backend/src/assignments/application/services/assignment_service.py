@@ -45,18 +45,28 @@ class AssignmentService(BaseService):
         return self._mission_service
 
     def list(self):
-        return self.repository.list_with_relations()
+        from assignments.application.services.assignment_task_service import (
+            AssignmentTaskService,
+        )
+
+        return AssignmentTaskService.annotate_assignments(
+            self.repository.list_with_relations()
+        )
 
     def list_for_user(self, user):
+        from assignments.application.services.assignment_task_service import (
+            AssignmentTaskService,
+        )
+
         volunteer = self.volunteer_repository.get_by_user_id(user.pk)
         if not volunteer:
             return self.repository.list_with_relations().none()
-        return self.repository.list_for_volunteer(volunteer.pk)
+        return AssignmentTaskService.annotate_assignments(
+            self.repository.list_for_volunteer(volunteer.pk)
+        )
 
     def get(self, assignment_id) -> Assignment:
-        assignment = (
-            self.repository.list_with_relations().filter(pk=assignment_id).first()
-        )
+        assignment = self.list().filter(pk=assignment_id).first()
         if not assignment:
             raise AssignmentNotFoundError()
         return assignment

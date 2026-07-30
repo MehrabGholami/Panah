@@ -12,6 +12,11 @@ class VolunteerRegisterSerializer(serializers.Serializer):
     national_id = serializers.CharField(max_length=20)
     city = serializers.CharField(max_length=100, required=False, allow_blank=True)
     bio = serializers.CharField(required=False, allow_blank=True)
+    gender = serializers.ChoiceField(
+        choices=["female", "male", "unspecified"],
+        required=False,
+        default="unspecified",
+    )
     availability = serializers.JSONField(required=False, default=dict)
     skill_names = serializers.ListField(
         child=serializers.CharField(max_length=100),
@@ -92,6 +97,7 @@ class VolunteerSerializer(serializers.ModelSerializer):
             "national_id",
             "city",
             "bio",
+            "gender",
             "status",
             "availability",
             "custom_skills",

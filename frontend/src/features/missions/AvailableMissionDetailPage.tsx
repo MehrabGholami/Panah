@@ -109,10 +109,16 @@ export default function AvailableMissionDetailPage() {
       {isLoading ? (
         <Typography>{t('actions.loading', { ns: 'common' })}</Typography>
       ) : mission ? (
-        <GlassCard sx={{ p: 3 }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2 }}>
-            <Box>
-              <Typography variant="h5" fontWeight={800} gutterBottom>
+        <GlassCard sx={{ p: { xs: 2, sm: 3 } }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+            spacing={1.5}
+            sx={{ mb: 2 }}
+          >
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="h5" fontWeight={800} gutterBottom sx={{ wordBreak: 'break-word' }}>
                 {mission.title}
               </Typography>
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -129,7 +135,11 @@ export default function AvailableMissionDetailPage() {
               </Stack>
             </Box>
             {mission.allow_volunteer_applications && !mission.user_has_applied && (
-              <GradientButton startIcon={<SendOutlinedIcon />} onClick={() => setApplyOpen(true)}>
+              <GradientButton
+                startIcon={<SendOutlinedIcon />}
+                onClick={() => setApplyOpen(true)}
+                sx={{ alignSelf: { xs: 'stretch', sm: 'flex-start' }, flexShrink: 0 }}
+              >
                 {t('actions.apply')}
               </GradientButton>
             )}

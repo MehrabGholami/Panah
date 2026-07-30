@@ -6,10 +6,15 @@ from rest_framework.views import APIView
 from assignments.api.serializers.assignment_serializers import (
     AssignmentCreateSerializer,
     AssignmentSerializer,
+    AssignmentTaskCreateSerializer,
+    AssignmentTaskSerializer,
+    AssignmentTaskStatusSerializer,
+    AssignmentTaskUpdateSerializer,
     get_idempotent_response,
     store_idempotent_response,
 )
 from assignments.application.services.assignment_service import AssignmentService
+from assignments.application.services.assignment_task_service import AssignmentTaskService
 from common.permissions.base import HasPermission
 
 
@@ -111,3 +116,66 @@ class AssignmentCompleteView(APIView):
     def post(self, request, id):
         assignment = AssignmentService().complete(id)
         return Response(AssignmentSerializer(assignment).data)
+
+
+class AssignmentTaskListCreateView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+
+    def get_required_permission(self):
+        if self.request.method == "POST":
+            return "assignments.manage_tasks"
+        return "assignments.view"
+
+    @property
+    def required_permission(self):
+        return self.get_required_permission()
+
+    def get(self, request, id):
+        tasks = AssignmentTaskService().list_for_assignment(id, request.user)
+        return Response(AssignmentTaskSerializer(tasks, many=True).data)
+
+    def post(self, request, id):
+        serializer = AssignmentTaskCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        task = AssignmentTaskService().create(
+            id,
+            request.user,
+            title=serializer.validated_data["title"],
+            description=serializer.validated_data.get("description", ""),
+        )
+        return Response(AssignmentTaskSerializer(task).data, status=status.HTTP_201_CREATED)
+
+
+class AssignmentTaskDetailView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "assignments.manage_tasks"
+
+    def patch(self, request, task_id):
+        serializer = AssignmentTaskUpdateSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        task = AssignmentTaskService().update(
+            task_id,
+            request.user,
+            title=serializer.validated_data.get("title"),
+            description=serializer.validated_data.get("description"),
+        )
+        return Response(AssignmentTaskSerializer(task).data)
+
+    def delete(self, request, task_id):
+        AssignmentTaskService().delete(task_id, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AssignmentTaskStatusView(APIView):
+    permission_classes = [IsAuthenticated, HasPermission]
+    required_permission = "assignments.report_task"
+
+    def patch(self, request, task_id):
+        serializer = AssignmentTaskStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        task = AssignmentTaskService().report_status(
+            task_id,
+            request.user,
+            status=serializer.validated_data["status"],
+        )
+        return Response(AssignmentTaskSerializer(task).data)

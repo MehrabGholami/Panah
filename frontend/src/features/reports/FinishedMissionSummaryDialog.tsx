@@ -2,7 +2,9 @@ import AssignmentOutlinedIcon from '@mui/icons-material/AssignmentOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import TaskAltOutlinedIcon from '@mui/icons-material/TaskAltOutlined';
 import {
+  Avatar,
   Box,
   Button,
   Chip,
@@ -11,10 +13,12 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
+  LinearProgress,
   Stack,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   TextField,
@@ -28,7 +32,7 @@ import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { GhostButton, GlassCard, GradientButton, StatusChip } from '@/shared/components/ui';
 import { usePermissions } from '@/shared/hooks/useAuth';
-import type { FinishedMissionDetail, Report } from '@/shared/types';
+import type { AssignmentTaskStatus, FinishedMissionDetail, Report } from '@/shared/types';
 import { toPersianDigits } from '@/shared/utils/persianDigits';
 
 interface FinishedMissionSummaryDialogProps {
@@ -36,6 +40,12 @@ interface FinishedMissionSummaryDialogProps {
   open: boolean;
   onClose: () => void;
 }
+
+const TASK_STATUS_CHIP: Record<AssignmentTaskStatus, string> = {
+  not_done: 'rejected',
+  in_progress: 'pending',
+  done: 'approved',
+};
 
 function formatDate(value?: string | null) {
   if (!value) return '—';
@@ -63,6 +73,11 @@ function MiniStat({ label, value }: { label: string; value: string }) {
       </Typography>
     </Box>
   );
+}
+
+function volunteerInitial(name?: string | null, email?: string) {
+  const source = (name || email || '؟').trim();
+  return source.charAt(0);
 }
 
 export function FinishedMissionSummaryDialog({
@@ -161,20 +176,22 @@ export function FinishedMissionSummaryDialog({
           sx: {
             borderRadius: 3,
             maxHeight: 'min(92vh, 900px)',
+            m: { xs: 1.5, sm: 2 },
+            width: { xs: 'calc(100% - 24px)', sm: undefined },
             display: 'flex',
             flexDirection: 'column',
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 800, pr: 6, position: 'relative' }}>
-          {t('summary.title')}
-          <IconButton
-            onClick={onClose}
-            sx={{ position: 'absolute', left: 12, top: 12 }}
-            aria-label="بستن"
-          >
-            <CloseIcon />
-          </IconButton>
+        <DialogTitle sx={{ fontWeight: 800, pb: 1.5 }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5}>
+            <Typography component="span" variant="h6" fontWeight={800} sx={{ flex: 1, minWidth: 0 }}>
+              {t('summary.title')}
+            </Typography>
+            <IconButton onClick={onClose} size="small" aria-label="بستن" sx={{ flexShrink: 0 }}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Stack>
         </DialogTitle>
         <DialogContent dividers sx={{ overflowY: 'auto' }}>
           {isLoading && <Typography>{t('actions.loading', { ns: 'common' })}</Typography>}
@@ -215,7 +232,7 @@ export function FinishedMissionSummaryDialog({
                 )}
               </Box>
 
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} useFlexGap flexWrap="wrap">
                 <MiniStat
                   label={t('table.applications')}
                   value={toPersianDigits(
@@ -226,6 +243,12 @@ export function FinishedMissionSummaryDialog({
                   label={t('table.assignments')}
                   value={toPersianDigits(
                     `${data.assignments_completed}/${data.assignments_total}`,
+                  )}
+                />
+                <MiniStat
+                  label={t('summary.tasks')}
+                  value={toPersianDigits(
+                    `${data.tasks_done ?? 0}/${data.tasks_total ?? 0}`,
                   )}
                 />
                 <MiniStat
@@ -250,28 +273,30 @@ export function FinishedMissionSummaryDialog({
                     {t('summary.emptyApps')}
                   </Typography>
                 ) : (
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>داوطلب</TableCell>
-                        <TableCell>وضعیت</TableCell>
-                        <TableCell>تاریخ</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {data.applications?.slice(0, 8).map((app) => (
-                        <TableRow key={app.id}>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight={700}>
-                              {app.volunteer_name || app.volunteer_email}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>{app.status}</TableCell>
-                          <TableCell>{formatDate(app.created_at)}</TableCell>
+                  <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <Table size="small" sx={{ minWidth: 360 }}>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>داوطلب</TableCell>
+                          <TableCell>وضعیت</TableCell>
+                          <TableCell>تاریخ</TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHead>
+                      <TableBody>
+                        {data.applications?.slice(0, 8).map((app) => (
+                          <TableRow key={app.id}>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight={700}>
+                                {app.volunteer_name || app.volunteer_email}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>{app.status}</TableCell>
+                            <TableCell>{formatDate(app.created_at)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 )}
               </GlassCard>
 
@@ -287,29 +312,218 @@ export function FinishedMissionSummaryDialog({
                     {t('summary.emptyAssignments')}
                   </Typography>
                 ) : (
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>داوطلب</TableCell>
-                        <TableCell>وضعیت</TableCell>
-                        <TableCell>تاریخ</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {data.assignments?.slice(0, 8).map((assignment) => (
-                        <TableRow key={assignment.id}>
-                          <TableCell>
-                            <Typography variant="body2" fontWeight={700}>
-                              {assignment.volunteer_name || assignment.volunteer_email}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>{assignment.status}</TableCell>
-                          <TableCell>{formatDate(assignment.created_at)}</TableCell>
+                  <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <Table size="small" sx={{ minWidth: 360 }}>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>داوطلب</TableCell>
+                          <TableCell>وضعیت</TableCell>
+                          <TableCell>تاریخ</TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHead>
+                      <TableBody>
+                        {data.assignments?.slice(0, 8).map((assignment) => (
+                          <TableRow key={assignment.id}>
+                            <TableCell>
+                              <Typography variant="body2" fontWeight={700}>
+                                {assignment.volunteer_name || assignment.volunteer_email}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>{assignment.status}</TableCell>
+                            <TableCell>{formatDate(assignment.created_at)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 )}
+              </GlassCard>
+
+              <GlassCard sx={{ p: 2 }}>
+                <Stack spacing={1.75}>
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ xs: 'stretch', sm: 'center' }}
+                    justifyContent="space-between"
+                    spacing={1.25}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <TaskAltOutlinedIcon color="primary" fontSize="small" />
+                      <Typography variant="subtitle2" fontWeight={800}>
+                        {t('summary.volunteerTasks')}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={0.75} useFlexGap flexWrap="wrap">
+                      <Chip
+                        size="small"
+                        color="success"
+                        label={`${t('summary.taskStatuses.done')}: ${toPersianDigits(data.tasks_done ?? 0)}`}
+                      />
+                      <Chip
+                        size="small"
+                        color="info"
+                        label={`${t('summary.taskStatuses.in_progress')}: ${toPersianDigits(data.tasks_in_progress ?? 0)}`}
+                      />
+                      <Chip
+                        size="small"
+                        label={`${t('summary.taskStatuses.not_done')}: ${toPersianDigits(data.tasks_not_done ?? 0)}`}
+                      />
+                    </Stack>
+                  </Stack>
+
+                  {(data.tasks_total ?? 0) > 0 && (
+                    <Box>
+                      <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        sx={{ mb: 0.75 }}
+                      >
+                        <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                          {t('summary.taskProgress')}
+                        </Typography>
+                        <Typography variant="caption" fontWeight={800}>
+                          {toPersianDigits(
+                            `${data.tasks_done ?? 0}/${data.tasks_total ?? 0}`,
+                          )}
+                        </Typography>
+                      </Stack>
+                      <LinearProgress
+                        variant="determinate"
+                        value={
+                          (data.tasks_total ?? 0) > 0
+                            ? ((data.tasks_done ?? 0) / (data.tasks_total ?? 1)) * 100
+                            : 0
+                        }
+                        sx={{
+                          height: 8,
+                          borderRadius: 999,
+                          bgcolor: 'action.hover',
+                          '& .MuiLinearProgress-bar': {
+                            borderRadius: 999,
+                            background: (theme) =>
+                              `linear-gradient(90deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+                          },
+                        }}
+                      />
+                    </Box>
+                  )}
+
+                  {(data.volunteer_tasks?.length ?? 0) === 0 ? (
+                    <Typography variant="body2" color="text.secondary">
+                      {t('summary.emptyTasks')}
+                    </Typography>
+                  ) : (
+                    <Stack spacing={1.5}>
+                      {data.volunteer_tasks?.map((group) => (
+                        <Box
+                          key={group.assignment_id}
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            border: 1,
+                            borderColor: 'divider',
+                            bgcolor: 'action.hover',
+                          }}
+                        >
+                          <Stack
+                            direction="row"
+                            spacing={1.25}
+                            alignItems="center"
+                            justifyContent="space-between"
+                            sx={{ mb: 1.25 }}
+                          >
+                            <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+                              <Avatar
+                                sx={{
+                                  width: 36,
+                                  height: 36,
+                                  fontSize: '0.95rem',
+                                  fontWeight: 800,
+                                  bgcolor: 'primary.main',
+                                  color: 'primary.contrastText',
+                                }}
+                              >
+                                {volunteerInitial(group.volunteer_name, group.volunteer_email)}
+                              </Avatar>
+                              <Box sx={{ minWidth: 0 }}>
+                                <Typography variant="body2" fontWeight={800} noWrap>
+                                  {group.volunteer_name || group.volunteer_email}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" noWrap>
+                                  {group.volunteer_email}
+                                </Typography>
+                              </Box>
+                            </Stack>
+                            <Chip
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                              label={toPersianDigits(
+                                `${group.tasks_done}/${group.tasks_total}`,
+                              )}
+                            />
+                          </Stack>
+
+                          <Stack spacing={1}>
+                            {group.tasks.map((task) => (
+                              <Stack
+                                key={task.id}
+                                direction={{ xs: 'column', sm: 'row' }}
+                                spacing={1}
+                                alignItems={{ xs: 'stretch', sm: 'center' }}
+                                justifyContent="space-between"
+                                sx={{
+                                  px: 1.25,
+                                  py: 1,
+                                  borderRadius: 1.5,
+                                  bgcolor: 'background.paper',
+                                  border: 1,
+                                  borderColor: 'divider',
+                                }}
+                              >
+                                <Box sx={{ minWidth: 0, flex: 1 }}>
+                                  <Typography variant="body2" fontWeight={700}>
+                                    {task.title}
+                                  </Typography>
+                                  {task.description ? (
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      sx={{
+                                        display: 'block',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {task.description}
+                                    </Typography>
+                                  ) : null}
+                                </Box>
+                                <Stack
+                                  direction="row"
+                                  spacing={1}
+                                  alignItems="center"
+                                  justifyContent="flex-end"
+                                  flexShrink={0}
+                                >
+                                  <StatusChip
+                                    status={TASK_STATUS_CHIP[task.status]}
+                                    label={t(`summary.taskStatuses.${task.status}`)}
+                                  />
+                                  <Typography variant="caption" color="text.secondary">
+                                    {formatDate(task.status_updated_at)}
+                                  </Typography>
+                                </Stack>
+                              </Stack>
+                            ))}
+                          </Stack>
+                        </Box>
+                      ))}
+                    </Stack>
+                  )}
+                </Stack>
               </GlassCard>
 
               <GlassCard sx={{ p: 2 }}>

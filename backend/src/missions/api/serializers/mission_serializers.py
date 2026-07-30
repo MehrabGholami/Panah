@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from missions.models import Mission, MissionApplication, MissionRequiredSkill
+from missions.models import Mission, MissionApplication, MissionCoordinatorRequest, MissionRequiredSkill
 from skills.models import Skill
 
 
@@ -69,6 +69,10 @@ class MissionSerializer(serializers.ModelSerializer):
     assignments_count = serializers.SerializerMethodField()
     user_has_applied = serializers.SerializerMethodField()
     user_application_status = serializers.SerializerMethodField()
+    user_coordinator_request_status = serializers.SerializerMethodField()
+    pending_coordinator_requests_count = serializers.SerializerMethodField()
+    can_manage = serializers.SerializerMethodField()
+    is_current_user_coordinator = serializers.SerializerMethodField()
 
     class Meta:
         model = Mission
@@ -104,6 +108,10 @@ class MissionSerializer(serializers.ModelSerializer):
             "assignments_count",
             "user_has_applied",
             "user_application_status",
+            "user_coordinator_request_status",
+            "pending_coordinator_requests_count",
+            "can_manage",
+            "is_current_user_coordinator",
             "created_at",
             "updated_at",
         )
@@ -120,6 +128,10 @@ class MissionSerializer(serializers.ModelSerializer):
             "assignments_count",
             "user_has_applied",
             "user_application_status",
+            "user_coordinator_request_status",
+            "pending_coordinator_requests_count",
+            "can_manage",
+            "is_current_user_coordinator",
             "created_at",
             "updated_at",
         )
@@ -193,6 +205,90 @@ class MissionSerializer(serializers.ModelSerializer):
             .first()
         )
         return application.status if application else None
+
+    def get_user_coordinator_request_status(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return None
+        coord_request = (
+            obj.coordinator_requests.filter(requester=request.user)
+            .order_by("-created_at")
+            .first()
+        )
+        return coord_request.status if coord_request else None
+
+    def get_pending_coordinator_requests_count(self, obj):
+        from missions.domain.enums import MissionCoordinatorRequestStatus
+
+        if hasattr(obj, "pending_coordinator_requests_count"):
+            return obj.pending_coordinator_requests_count
+        return obj.coordinator_requests.filter(
+            status=MissionCoordinatorRequestStatus.SUBMITTED
+        ).count()
+
+    def get_can_manage(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        from missions.application.services.mission_service import MissionService
+
+        return MissionService().can_manage_mission(request.user, obj)
+
+    def get_is_current_user_coordinator(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return str(obj.coordinator_id) == str(request.user.pk)
+
+
+class MissionCoordinatorRequestSerializer(serializers.ModelSerializer):
+    requester_name = serializers.SerializerMethodField()
+    requester_email = serializers.EmailField(source="requester.email", read_only=True)
+    mission_title = serializers.CharField(source="mission.title", read_only=True)
+    disaster_title = serializers.CharField(
+        source="mission.disaster.title", read_only=True
+    )
+    current_coordinator_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MissionCoordinatorRequest
+        fields = (
+            "id",
+            "mission",
+            "mission_title",
+            "disaster_title",
+            "requester",
+            "requester_name",
+            "requester_email",
+            "current_coordinator_name",
+            "message",
+            "status",
+            "reviewed_by",
+            "reviewed_at",
+            "review_note",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = fields
+
+    def get_requester_name(self, obj):
+        user = obj.requester
+        full_name = f"{user.first_name} {user.last_name}".strip()
+        return full_name or user.email
+
+    def get_current_coordinator_name(self, obj):
+        coordinator = obj.mission.coordinator
+        full_name = f"{coordinator.first_name} {coordinator.last_name}".strip()
+        return full_name or coordinator.email
+
+
+class MissionCoordinatorRequestCreateSerializer(serializers.Serializer):
+    message = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+
+
+class MissionAssignCoordinatorSerializer(serializers.Serializer):
+    coordinator = serializers.UUIDField()
+    review_note = serializers.CharField(required=False, allow_blank=True, max_length=2000)
 
 
 class MissionVisibilitySerializer(serializers.Serializer):

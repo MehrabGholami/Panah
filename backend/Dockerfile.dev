@@ -1,9 +1,12 @@
 FROM python:3.13-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev curl \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev curl postgresql-client \
     && rm -rf /var/lib/apt/lists/*
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir ".[dev]"
+
+# Prefer the lockfile for reproducible installs; then install the local package metadata.
+COPY pyproject.toml requirements.lock ./
+RUN pip install --no-cache-dir -r requirements.lock \
+    && pip install --no-cache-dir --no-deps .
 COPY . .
 RUN sed -i 's/\r$//' /app/entrypoint.sh || sed -i '' 's/\r$//' /app/entrypoint.sh
 ENV PYTHONPATH=/app/src

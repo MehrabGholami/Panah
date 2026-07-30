@@ -114,6 +114,9 @@ class DashboardService:
             "disaster_status": [],
             "mission_status": self._mission_status_chart(coordinator_id=user.pk),
             "volunteer_pipeline": [],
+            "mission_application_status": self._mission_application_status_chart(
+                coordinator_id=user.pk
+            ),
             "assignment_status": self._assignment_status_chart(coordinator_id=user.pk),
             "activity_trend": self._merge_trend(
                 [],
@@ -142,10 +145,13 @@ class DashboardService:
             "disaster_status": [],
             "mission_status": [],
             "volunteer_pipeline": [],
+            "mission_application_status": [],
             "assignment_status": [],
             "activity_trend": [],
             "my_application_status": [],
             "my_assignment_status": [],
+            "skill_distribution": [],
+            "gender_distribution": [],
         }
 
         if can_disasters:
@@ -175,9 +181,11 @@ class DashboardService:
 
         if can_volunteers:
             kpis.update(self._volunteer_kpis())
-            charts["volunteer_pipeline"] = self._volunteer_pipeline_chart()
+            charts["skill_distribution"] = self._skill_distribution_chart()
+            charts["gender_distribution"] = self._gender_distribution_chart()
 
         if can_missions and can_volunteers:
+            charts["mission_application_status"] = self._mission_application_status_chart()
             kpis.update(self._assignment_kpis())
             charts["assignment_status"] = self._assignment_status_chart()
 
@@ -212,6 +220,7 @@ class DashboardService:
             "disaster_status": [],
             "mission_status": [],
             "volunteer_pipeline": [],
+            "mission_application_status": [],
             "assignment_status": [],
             "activity_trend": [],
             "my_application_status": [],
@@ -420,22 +429,101 @@ class DashboardService:
             if row["value"] > 0
         ]
 
-    def _volunteer_pipeline_chart(self) -> list[dict]:
-        repo = VolunteerRepository()
-        stages = [
-            (VolunteerStatus.PENDING_APPROVAL, "در انتظار تأیید"),
-            (VolunteerStatus.ACTIVE, "فعال"),
-            (VolunteerStatus.REJECTED, "ردشده"),
-            (VolunteerStatus.REGISTERED, "ثبت‌شده"),
-        ]
+    def _mission_application_status_chart(self, coordinator_id=None) -> list[dict]:
+        labels = {
+            MissionApplicationStatus.SUBMITTED: "در انتظار بررسی",
+            MissionApplicationStatus.WAITLIST: "لیست انتظار",
+            MissionApplicationStatus.APPROVED: "تأییدشده",
+            MissionApplicationStatus.REJECTED: "ردشده",
+            MissionApplicationStatus.WITHDRAWN: "انصراف",
+        }
+        qs = MissionApplication.objects.all()
+        if coordinator_id is not None:
+            qs = qs.filter(mission__coordinator_id=coordinator_id)
+        rows = (
+            qs.values("status")
+            .annotate(value=Count("id"))
+            .order_by("-value")
+        )
         return [
             {
-                "key": str(status),
-                "label": label,
-                "value": repo.count_by_status(status),
+                "key": row["status"],
+                "label": labels.get(row["status"], row["status"]),
+                "value": row["value"],
             }
-            for status, label in stages
-            if repo.count_by_status(status) > 0
+            for row in rows
+            if row["value"] > 0
+        ]
+
+    def _skill_distribution_chart(self, limit: int = 10) -> list[dict]:
+        """Top skills among registered volunteers (catalog + custom skills)."""
+        from collections import Counter
+
+        from skills.models import VolunteerSkill
+        from volunteers.models import VolunteerProfile
+
+        rows = (
+            VolunteerSkill.objects.select_related("skill")
+            .values("skill__name")
+            .annotate(value=Count("id"))
+            .order_by("-value")
+        )
+        counter: Counter[str] = Counter(
+            {row["skill__name"]: row["value"] for row in rows if row["skill__name"]}
+        )
+
+        for custom_list in VolunteerProfile.objects.exclude(custom_skills=[]).values_list(
+            "custom_skills", flat=True
+        ):
+            if not isinstance(custom_list, list):
+                continue
+            for name in custom_list:
+                normalized = str(name).strip()
+                if normalized:
+                    counter[normalized] += 1
+
+        if not counter:
+            return []
+
+        top = counter.most_common(limit)
+        shown_keys = {name for name, _ in top}
+        other_total = sum(value for name, value in counter.items() if name not in shown_keys)
+
+        result = [
+            {"key": name, "label": name, "value": value}
+            for name, value in top
+            if value > 0
+        ]
+        if other_total > 0:
+            result.append({"key": "other", "label": "سایر", "value": other_total})
+        return result
+
+    def _gender_distribution_chart(self) -> list[dict]:
+        from volunteers.domain.enums import VolunteerGender
+        from volunteers.models import VolunteerProfile
+
+        labels = {
+            VolunteerGender.FEMALE: "خانم",
+            VolunteerGender.MALE: "آقا",
+            VolunteerGender.UNSPECIFIED: "نامشخص",
+        }
+        rows = (
+            VolunteerProfile.objects.exclude(gender="other")
+            .values("gender")
+            .annotate(value=Count("id"))
+            .order_by("-value")
+        )
+        return [
+            {
+                "key": row["gender"] or VolunteerGender.UNSPECIFIED,
+                "label": labels.get(
+                    row["gender"] or VolunteerGender.UNSPECIFIED,
+                    row["gender"] or VolunteerGender.UNSPECIFIED,
+                ),
+                "value": row["value"],
+            }
+            for row in rows
+            if row["value"] > 0
         ]
 
     def _assignment_status_chart(self, coordinator_id=None) -> list[dict]:

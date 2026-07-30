@@ -1,0 +1,221 @@
+@startuml sequence-assignment
+' دیاگرام توالی تخصیص داوطلب به مأموریت و چرخه پاسخ داوطلب
+' شامل تخصیص مستقیم توسط هماهنگ‌کننده، پذیرش، رد، ثبت حضور و اعلام پایان کار
+
+title دیاگرام توالی تخصیص داوطلب به مأموریت
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Tahoma"
+skinparam sequence {
+  ArrowColor #2A5DA8
+  LifeLineBorderColor #5F6B7A
+  LifeLineBackgroundColor #F1F3F5
+  ParticipantBorderColor #0B6E4F
+  ParticipantBackgroundColor #F4FBF7
+  ParticipantFontColor #0A2B20
+  ActorBorderColor #2A5DA8
+  ActorBackgroundColor #E8F1FF
+}
+
+autonumber "<b>[00]"
+
+actor "هماهنگ‌کننده" as COORD
+actor "داوطلب" as VOL
+participant "کلاینت وب" as SPA
+participant "دروازه Nginx" as NGX
+participant "نمای REST تخصیص" as VIEW
+participant "سرویس تخصیص" as ASG
+participant "سرویس مأموریت" as MIS
+participant "سرویس اعلان" as NOT
+participant "سرویس حسابرسی" as AUD
+database "PostgreSQL" as PG
+queue "Redis" as RD
+participant "کارگر Celery" as WK
+participant "سرویس ایمیل" as MAIL
+
+== گام یک انتخاب داوطلب واجد شرایط ==
+
+COORD -> SPA : باز کردن صفحه جزئیات مأموریت
+SPA -> NGX : GET /api/v1/missions/{id}/eligible-volunteers/
+NGX -> VIEW : هدایت درخواست
+VIEW -> ASG : درخواست فهرست داوطلبان واجد شرایط
+ASG -> PG : پرسمان داوطلبان فعال با مهارت‌های الزامی مأموریت
+PG --> ASG : فهرست داوطلبان همراه با سطح تخصص
+ASG -> ASG : محاسبه امتیاز تطابق بر پایه مهارت، شهر و دسترس‌پذیری
+ASG --> VIEW : فهرست مرتب‌شده بر پایه امتیاز تطابق
+VIEW --> SPA : پاسخ 200 با فهرست صفحه‌بندی‌شده
+SPA --> COORD : نمایش جدول داوطلبان پیشنهادی
+
+== گام دو ایجاد تخصیص ==
+
+COORD -> SPA : انتخاب داوطلب و تأیید تخصیص
+SPA -> NGX : POST /api/v1/assignments/ با شناسه مأموریت و داوطلب
+NGX -> VIEW : هدایت درخواست
+VIEW -> VIEW : اعتبارسنجی بدنه درخواست با سریالایزر
+VIEW -> VIEW : بررسی مجوز assignments.create برای کاربر
+
+alt کاربر مجوز لازم را ندارد
+    VIEW --> SPA : پاسخ 403 با پیام نبود دسترسی
+    SPA --> COORD : نمایش خطای نبود دسترسی
+else کاربر مجاز است
+    VIEW -> ASG : درخواست ایجاد تخصیص
+    ASG -> MIS : استعلام وضعیت و ظرفیت مأموریت
+    MIS -> PG : بازیابی مأموریت و شمارش تخصیص‌های فعال
+    PG --> MIS : وضعیت مأموریت و شمار تخصیص فعال
+    MIS --> ASG : نتیجه استعلام ظرفیت
+
+    alt وضعیت مأموریت پذیرای تخصیص نیست
+        ASG --> VIEW : استثنای گذار وضعیت نامعتبر
+        VIEW --> SPA : پاسخ 409 با پیام تعارض وضعیت
+        SPA --> COORD : نمایش پیام مأموریت در وضعیت مناسب نیست
+    else ظرفیت مأموریت تکمیل است
+        ASG --> VIEW : استثنای تکمیل ظرفیت
+        VIEW --> SPA : پاسخ 422 با پیام نبود ظرفیت آزاد
+        SPA --> COORD : پیشنهاد افزایش ظرفیت یا فهرست انتظار
+    else تخصیص تکراری است
+        ASG -> PG : بررسی قید یکتایی جفت مأموریت و داوطلب
+        PG --> ASG : نقض قید یکتایی
+        ASG --> VIEW : استثنای تخصیص تکراری
+        VIEW --> SPA : پاسخ 409 با پیام تخصیص تکراری
+        SPA --> COORD : نمایش پیام این داوطلب پیش‌تر تخصیص یافته است
+    else شرایط ایجاد تخصیص فراهم است
+        group تراکنش پایگاه داده
+            ASG -> PG : درج رکورد تخصیص با وضعیت pending
+            PG --> ASG : شناسه تخصیص
+            ASG -> AUD : ثبت رکورد حسابرسی ایجاد تخصیص
+            AUD -> PG : درج رکورد حسابرسی
+        end
+        ASG -> NOT : درخواست اعلان تخصیص جدید
+        NOT -> PG : درج اعلان درون‌برنامه‌ای برای داوطلب
+        NOT -> RD : انتشار وظیفه ارسال ایمیل تخصیص
+        ASG --> VIEW : نمایه تخصیص ایجادشده
+        VIEW --> SPA : پاسخ 201 با نمایه تخصیص
+        SPA -> SPA : بی‌اعتبارسازی حافظه نهان پرسمان مأموریت و تخصیص‌ها
+        SPA --> COORD : نمایش پیام تخصیص ثبت شد و در انتظار پاسخ داوطلب است
+    end
+end
+
+RD -> WK : تحویل وظیفه ارسال ایمیل
+WK -> PG : بازیابی نشانی رایانامه و داده قالب پیام
+PG --> WK : داده مورد نیاز پیام
+WK -> MAIL : ارسال ایمیل تخصیص جدید
+MAIL --> WK : تأیید پذیرش پیام
+WK -> PG : ثبت وضعیت ارسال اعلان
+
+== گام سه پاسخ داوطلب ==
+
+VOL -> SPA : باز کردن صفحه مأموریت‌های من
+SPA -> NGX : GET /api/v1/assignments/mine/
+NGX -> VIEW : هدایت درخواست
+VIEW -> PG : بازیابی تخصیص‌های داوطلب
+PG --> VIEW : فهرست تخصیص‌ها
+VIEW --> SPA : پاسخ 200 با فهرست تخصیص‌ها
+SPA --> VOL : نمایش تخصیص در انتظار با گزینه پذیرش و رد
+
+alt داوطلب تخصیص را می‌پذیرد
+    VOL -> SPA : انتخاب گزینه پذیرش
+    SPA -> NGX : POST /api/v1/assignments/{id}/accept/
+    NGX -> VIEW : هدایت درخواست
+    VIEW -> ASG : اعمال گذار به وضعیت accepted
+    ASG -> PG : به‌روزرسانی وضعیت تخصیص
+    ASG -> AUD : ثبت رکورد حسابرسی پذیرش
+    AUD -> PG : درج رکورد حسابرسی
+    ASG -> MIS : اطلاع از اشغال ظرفیت
+    MIS -> PG : شمارش تخصیص‌های پذیرفته‌شده
+
+    alt ظرفیت مأموریت تکمیل شد
+        MIS -> PG : تغییر وضعیت مأموریت به in_progress
+        MIS -> NOT : اعلان آغاز مأموریت به همه داوطلبان پذیرفته‌شده
+        NOT -> PG : درج اعلان‌های گروهی
+        NOT -> RD : انتشار وظیفه ارسال ایمیل گروهی
+    else ظرفیت هنوز تکمیل نشده است
+        MIS -> NOT : اعلان پذیرش تخصیص به هماهنگ‌کننده
+        NOT -> PG : درج اعلان
+    end
+
+    ASG --> VIEW : نمایه به‌روزشده تخصیص
+    VIEW --> SPA : پاسخ 200 با وضعیت accepted
+    SPA --> VOL : نمایش پیام حضور شما ثبت شد
+else داوطلب تخصیص را رد می‌کند
+    VOL -> SPA : انتخاب گزینه رد همراه با دلیل
+    SPA -> NGX : POST /api/v1/assignments/{id}/decline/
+    NGX -> VIEW : هدایت درخواست
+    VIEW -> ASG : اعمال گذار به وضعیت declined
+    ASG -> PG : به‌روزرسانی وضعیت تخصیص و ثبت دلیل
+    ASG -> AUD : ثبت رکورد حسابرسی رد تخصیص
+    AUD -> PG : درج رکورد حسابرسی
+    ASG -> MIS : اطلاع از آزادسازی ظرفیت
+    MIS -> PG : بازیابی نخستین درخواست فهرست انتظار
+
+    opt درخواست فهرست انتظار موجود است
+        MIS -> ASG : درخواست ارتقای داوطلب فهرست انتظار
+        ASG -> PG : تغییر وضعیت درخواست به approved و درج تخصیص تازه
+        ASG -> NOT : اعلان ارتقا از فهرست انتظار
+        NOT -> RD : انتشار وظیفه ارسال ایمیل
+    end
+
+    ASG -> NOT : اعلان رد تخصیص به هماهنگ‌کننده
+    NOT -> PG : درج اعلان
+    ASG --> VIEW : نمایه به‌روزشده تخصیص
+    VIEW --> SPA : پاسخ 200 با وضعیت declined
+    SPA --> VOL : نمایش پیام عدم حضور شما ثبت شد
+else مهلت پاسخ منقضی می‌شود
+    RD -> WK : اجرای وظیفه دوره‌ای بررسی تخصیص‌های بی‌پاسخ
+    WK -> PG : بازیابی تخصیص‌های pending با مهلت سرآمد
+    PG --> WK : فهرست تخصیص‌های سرآمد
+    WK -> ASG : درخواست رد خودکار
+    ASG -> PG : به‌روزرسانی وضعیت به declined با نشانه رد خودکار
+    ASG -> AUD : ثبت رکورد حسابرسی رد خودکار
+    AUD -> PG : درج رکورد حسابرسی
+    ASG -> NOT : اعلان انقضای مهلت به داوطلب و هماهنگ‌کننده
+    NOT -> PG : درج اعلان‌ها
+end
+
+== گام چهار اجرا و پایان کار ==
+
+VOL -> SPA : ثبت حضور در محل مأموریت
+SPA -> NGX : POST /api/v1/assignments/{id}/check-in/
+NGX -> VIEW : هدایت درخواست
+VIEW -> ASG : اعمال گذار به وضعیت checked_in
+
+alt وضعیت مأموریت in_progress نیست
+    ASG --> VIEW : استثنای گذار نامعتبر
+    VIEW --> SPA : پاسخ 409 با پیام ثبت حضور مجاز نیست
+    SPA --> VOL : نمایش پیام ثبت حضور در این زمان مجاز نیست
+else ثبت حضور مجاز است
+    ASG -> PG : به‌روزرسانی وضعیت و ثبت زمان حضور
+    ASG -> AUD : ثبت رکورد حسابرسی ثبت حضور
+    AUD -> PG : درج رکورد حسابرسی
+    VIEW --> SPA : پاسخ 200 با وضعیت checked_in
+    SPA --> VOL : نمایش پیام حضور شما در محل ثبت شد
+end
+
+VOL -> SPA : اعلام پایان کار
+SPA -> NGX : POST /api/v1/assignments/{id}/complete/
+NGX -> VIEW : هدایت درخواست
+VIEW -> ASG : اعمال گذار به وضعیت completed
+ASG -> PG : به‌روزرسانی وضعیت تخصیص
+ASG -> AUD : ثبت رکورد حسابرسی پایان کار
+AUD -> PG : درج رکورد حسابرسی
+ASG -> MIS : بررسی تعیین وضعیت نهایی همه تخصیص‌ها
+MIS -> PG : شمارش تخصیص‌های باز
+
+opt هیچ تخصیص بازی باقی نمانده است
+    MIS -> PG : تغییر وضعیت مأموریت به completed
+    MIS -> NOT : اعلان آمادگی ثبت گزارش به هماهنگ‌کننده
+    NOT -> PG : درج اعلان
+end
+
+VIEW --> SPA : پاسخ 200 با وضعیت completed
+SPA --> VOL : نمایش پیام پایان کار شما ثبت شد
+
+note over ASG, MIS
+  قواعد نگهبان گذار وضعیت
+  pending به accepted یا declined
+  accepted به checked_in یا declined
+  checked_in به completed
+  هر گذار دیگری با خطای 409 رد می‌شود
+end note
+
+@enduml

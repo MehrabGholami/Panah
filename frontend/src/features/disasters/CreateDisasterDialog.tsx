@@ -20,6 +20,8 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -177,6 +179,8 @@ function resolveDetailedLocation(province?: string | null, city?: string | null,
 
 export function CreateDisasterDialog({ open, onClose, disaster }: CreateDisasterDialogProps) {
   const { t } = useTranslation('disasters');
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const queryClient = useQueryClient();
   const [form, setForm] = useState<CreateDisasterRequest>(initialForm);
   const [error, setError] = useState<string | null>(null);
@@ -474,9 +478,12 @@ export function CreateDisasterDialog({ open, onClose, disaster }: CreateDisaster
       onClose={handleClose}
       fullWidth
       maxWidth="md"
+      fullScreen={fullScreen}
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: fullScreen ? 0 : 3,
+          m: { xs: fullScreen ? 0 : 1.5, sm: 2 },
+          width: { xs: fullScreen ? '100%' : 'calc(100% - 24px)', sm: undefined },
           backgroundImage: (theme) =>
             theme.palette.mode === 'dark'
               ? 'linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(8,18,38,0.98) 100%)'

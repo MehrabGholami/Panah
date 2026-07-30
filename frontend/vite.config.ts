@@ -15,10 +15,9 @@ export default defineConfig({
     // Allow requests proxied through nginx (Docker) without Host-check 403
     allowedHosts: true,
     fs: {
-      // For local dev: allow serving font files from your Desktop.
       // Note: when fs.allow is set, Vite becomes strict and stops serving files outside allow list.
-      // We must include the app root (/app in Docker) too, otherwise '/' returns 403.
-      allow: ['C:/Users/Mehrab/Desktop/meem', '/meem', '/app'],
+      // We must include the app root (/app in Docker), otherwise '/' returns 403.
+      allow: ['/app', path.resolve(__dirname)],
     },
     // Windows + Docker volume mounts may miss file events; poll for changes
     watch: {

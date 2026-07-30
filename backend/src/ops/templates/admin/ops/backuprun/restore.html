@@ -1,0 +1,120 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card card-outline card-danger">
+      <div class="card-header">
+        <h3 class="card-title mb-0">
+          <i class="fas fa-exclamation-triangle text-danger"></i>
+          Confirm safe restore
+        </h3>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-warning">
+          <strong>Warning:</strong>
+          This is a destructive operation and will replace all current data in database
+          <code>{{ db_name }}</code>
+          with the selected backup.
+          Run only on test/staging environments or with a clear recovery plan.
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6 mb-2">
+            <div class="small text-muted">Backup started</div>
+            <div class="font-weight-bold">{{ run.started_at }}</div>
+          </div>
+          <div class="col-md-6 mb-2">
+            <div class="small text-muted">Status</div>
+            <div><span class="badge bg-success">{{ run.status }}</span></div>
+          </div>
+          <div class="col-md-6 mb-2">
+            <div class="small text-muted">Database file</div>
+            <code style="word-break:break-all">{{ run.db_path }}</code>
+          </div>
+          <div class="col-md-6 mb-2">
+            <div class="small text-muted">Media file</div>
+            <code style="word-break:break-all">{{ run.media_path|default:"—" }}</code>
+          </div>
+          <div class="col-md-6 mb-2">
+            <div class="small text-muted">Size</div>
+            <div class="font-weight-bold">{{ size_label }}</div>
+          </div>
+        </div>
+
+        <form method="post" id="restore-form">
+          {% csrf_token %}
+          <div class="form-group mb-3">
+            <label for="id_confirm_db_name" class="font-weight-bold">
+              Type the database name to confirm
+            </label>
+            <input
+              id="id_confirm_db_name"
+              name="confirm_db_name"
+              type="text"
+              class="form-control"
+              required
+              autocomplete="off"
+              placeholder="{{ db_name }}"
+              dir="ltr"
+            />
+            <small class="form-text text-muted">
+              Must match exactly: <strong dir="ltr">{{ db_name }}</strong>
+            </small>
+          </div>
+
+          <div class="form-group mb-3">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="id_ack" required />
+              <label class="form-check-label" for="id_ack">
+                I understand this is destructive and will replace current data.
+              </label>
+            </div>
+          </div>
+
+          {% if has_media %}
+          <div class="form-group mb-3">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="id_restore_media" name="restore_media" />
+              <label class="form-check-label" for="id_restore_media">
+                Also restore media files
+              </label>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="mt-4 d-flex flex-wrap" style="gap:0.5rem">
+            <button type="submit" class="btn btn-danger" id="restore-submit" disabled>
+              <i class="fas fa-undo"></i> Run restore
+            </button>
+            <a href="{% url 'admin:ops_backuprun_changelist' %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer text-muted small">
+        After success, restart backend and celery services and run
+        <code>migrate</code> if needed. Your current session may be disconnected.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var confirmInput = document.getElementById('id_confirm_db_name');
+  var ack = document.getElementById('id_ack');
+  var submitBtn = document.getElementById('restore-submit');
+  var expected = "{{ db_name|escapejs }}";
+  function sync() {
+    var ok = ack.checked && confirmInput.value.trim() === expected;
+    submitBtn.disabled = !ok;
+  }
+  confirmInput.addEventListener('input', sync);
+  ack.addEventListener('change', sync);
+  sync();
+})();
+</script>
+{% endblock %}

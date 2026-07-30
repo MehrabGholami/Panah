@@ -2,12 +2,13 @@ FROM python:3.13-slim AS builder
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential libpq-dev \
     && rm -rf /var/lib/apt/lists/*
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir .
+COPY pyproject.toml requirements.lock ./
+RUN pip install --no-cache-dir -r requirements.lock \
+    && pip install --no-cache-dir --no-deps .
 
 FROM python:3.13-slim AS runtime
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends libpq5 curl \
+RUN apt-get update && apt-get install -y --no-install-recommends libpq5 curl postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 1000 appuser
 COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages

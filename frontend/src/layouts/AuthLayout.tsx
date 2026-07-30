@@ -71,17 +71,21 @@ export function AuthLayout() {
             alignItems: 'stretch',
             justifyContent: 'flex-start',
             minHeight: 0,
-            overflow: 'hidden',
-            px: 2,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            px: { xs: 1.25, sm: 2 },
             py: { xs: 0.75, md: 1.5 },
           }}
         >
-          <Container maxWidth="md" disableGutters>
+          <Container maxWidth="md" disableGutters sx={{ width: '100%', my: { xs: 0, sm: 'auto' } }}>
             <GlassCard
               sx={{
                 position: 'relative',
                 overflow: 'visible',
-                height: '100%',
+                height: { xs: 'auto', sm: '100%' },
+                minHeight: { xs: 'auto', sm: '100%' },
+                maxHeight: { xs: 'none', sm: '100%' },
                 display: 'flex',
                 flexDirection: 'column',
                 border: '1px solid',
@@ -140,10 +144,12 @@ export function AuthLayout() {
                 <Box
                   sx={{
                     flex: 1,
-                    height: '100%',
+                    height: { xs: 'auto', sm: '100%' },
                     display: 'flex',
                     flexDirection: 'column',
-                    overflow: 'hidden',
+                    overflowY: { xs: 'visible', sm: 'auto' },
+                    overflowX: 'hidden',
+                    WebkitOverflowScrolling: 'touch',
                     p: { xs: 2, md: 2.5 },
                     pt: { xs: 2.25, md: 3 },
                   }}

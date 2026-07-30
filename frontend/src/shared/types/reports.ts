@@ -1,3 +1,5 @@
+import type { AssignmentTaskStatus } from './assignments';
+
 export type ReportStatus = 'draft' | 'submitted' | 'reviewed';
 
 export interface Report {
@@ -31,8 +33,30 @@ export interface FinishedMissionSummary {
   assignments_completed: number;
   assignments_checked_in: number;
   reports_total: number;
+  tasks_total?: number;
+  tasks_done?: number;
+  tasks_in_progress?: number;
+  tasks_not_done?: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface FinishedMissionVolunteerTaskItem {
+  id: string;
+  title: string;
+  description?: string;
+  status: AssignmentTaskStatus;
+  status_updated_at?: string | null;
+}
+
+export interface FinishedMissionVolunteerTasks {
+  volunteer_name?: string | null;
+  volunteer_email?: string;
+  assignment_id: string;
+  assignment_status: string;
+  tasks_done: number;
+  tasks_total: number;
+  tasks: FinishedMissionVolunteerTaskItem[];
 }
 
 export interface FinishedMissionDetail extends FinishedMissionSummary {
@@ -59,6 +83,7 @@ export interface FinishedMissionDetail extends FinishedMissionSummary {
     status: string;
     created_at: string;
   }>;
+  volunteer_tasks?: FinishedMissionVolunteerTasks[];
   reports?: Array<{
     id: string;
     author_name?: string | null;

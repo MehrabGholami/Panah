@@ -22,6 +22,8 @@ import {
   Skeleton,
   Stack,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { GlassCard, StatusChip, UserAvatar, type StatusVariant } from '@/shared/components/ui';
@@ -177,6 +179,8 @@ export function VolunteerDetailModal({
   footer,
 }: VolunteerDetailModalProps) {
   const { t } = useTranslation(['volunteers', 'common']);
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   const availabilityLines = formatAvailability(volunteer?.availability, t);
   const profileTiles = [
@@ -295,13 +299,16 @@ export function VolunteerDetailModal({
       onClose={onClose}
       maxWidth="md"
       fullWidth
+      fullScreen={fullScreen}
       scroll="paper"
       aria-labelledby="volunteer-detail-title"
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: fullScreen ? 0 : 3,
           overflow: 'hidden',
-          maxHeight: 'min(92vh, 920px)',
+          maxHeight: fullScreen ? '100%' : 'min(92vh, 920px)',
+          m: { xs: fullScreen ? 0 : 1.5, sm: 2 },
+          width: { xs: fullScreen ? '100%' : 'calc(100% - 24px)', sm: undefined },
           display: 'flex',
           flexDirection: 'column',
           bgcolor: 'background.default',

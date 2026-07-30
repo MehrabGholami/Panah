@@ -11,6 +11,7 @@ BACKUP_DIR="${PROJECT_ROOT}/database/backups"
 CONTAINER="${POSTGRES_CONTAINER:-volunteer-management-postgres}"
 DB_NAME="${POSTGRES_DB:-volunteer_management}"
 DB_USER="${POSTGRES_USER:-volunteer_user}"
+RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-30}"
 
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 BACKUP_FILE="${BACKUP_DIR}/${DB_NAME}_${TIMESTAMP}.sql.gz"
@@ -28,5 +29,5 @@ docker exec -t "${CONTAINER}" pg_dump -U "${DB_USER}" -d "${DB_NAME}" --no-owner
 
 echo "Backup saved: ${BACKUP_FILE}"
 
-# Keep last 14 backups
-find "${BACKUP_DIR}" -name "${DB_NAME}_*.sql.gz" -type f | sort -r | tail -n +15 | xargs -r rm -f
+# Keep backups from the last RETENTION_DAYS days
+find "${BACKUP_DIR}" -name "${DB_NAME}_*.sql.gz" -type f -mtime +"${RETENTION_DAYS}" -delete

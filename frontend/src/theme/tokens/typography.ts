@@ -1,5 +1,5 @@
 export const typography = {
-  fontFamily: '"Meem", sans-serif',
+  fontFamily: '"Vazirmatn", Tahoma, sans-serif',
   h1: {
     fontSize: '2.5rem',
     fontWeight: 700,

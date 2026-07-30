@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
@@ -11,10 +12,20 @@ class DisasterListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated, HasPermission]
     filterset_fields = ["severity", "status", "disaster_type"]
     search_fields = ["title", "location", "description", "province", "city"]
-    ordering_fields = ["created_at", "severity", "status"]
+    ordering_fields = ["created_at", "severity", "status", "occurred_at"]
 
     def get_queryset(self):
-        return DisasterService().list()
+        qs = DisasterService().list()
+        params = getattr(self.request, "query_params", self.request.GET)
+        occurred_after = (params.get("occurred_after") or "").strip()
+        if occurred_after:
+            # Crises that occurred on/after the selected date.
+            # If occurred_at is empty, fall back to created_at.
+            qs = qs.filter(
+                Q(occurred_at__date__gte=occurred_after)
+                | Q(occurred_at__isnull=True, created_at__date__gte=occurred_after)
+            )
+        return qs
 
     def get_required_permission(self):
         if self.request.method == "POST":

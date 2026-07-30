@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  فرآیند ثبت‌نام و تأیید داوطلب در سامانه پناه
+  استاندارد BPMN 2.0
+  خطوط شنا: داوطلب، سامانه پناه، هماهنگ‌کننده یا مدیر سامانه
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  id="Definitions_VolunteerRegistration"
+                  targetNamespace="http://panah.local/bpmn"
+                  exporter="Panah SRS Documentation"
+                  exporterVersion="1.0">
+
+  <bpmn:collaboration id="Collaboration_Registration">
+    <bpmn:participant id="Participant_Panah" name="سامانه مدیریت بحران و داوطلبان پناه" processRef="Process_VolunteerRegistration" />
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_VolunteerRegistration" name="ثبت‌نام و تأیید داوطلب" isExecutable="false">
+
+    <bpmn:laneSet id="LaneSet_Registration">
+      <bpmn:lane id="Lane_Volunteer" name="داوطلب">
+        <bpmn:flowNodeRef>StartEvent_Registration</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_FillForm</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_FixData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CompleteProfile</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_ReadyForMission</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_System" name="سامانه پناه">
+        <bpmn:flowNodeRef>Task_ValidateData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_DataValid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CreateAccount</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotifyReviewers</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ActivateAccount</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Reviewer" name="هماهنگ‌کننده یا مدیر سامانه">
+        <bpmn:flowNodeRef>Task_ReviewRegistration</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_ReviewDecision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RecordRejection</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Rejected</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="StartEvent_Registration" name="ورود به صفحه ثبت‌نام">
+      <bpmn:outgoing>Flow_01</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_FillForm" name="تکمیل فرم ثبت‌نام و پذیرش شرایط استفاده">
+      <bpmn:documentation>دریافت نام، نام خانوادگی، نشانی رایانامه، شماره تماس، کد ملی و گذرواژه همراه با پذیرش بیانیه حفاظت از داده شخصی</bpmn:documentation>
+      <bpmn:incoming>Flow_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_02</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="Task_ValidateData" name="اعتبارسنجی داده و بررسی یکتایی رایانامه و کد ملی">
+      <bpmn:documentation>اعتبارسنجی سریالایزر، بررسی قالب کد ملی و رایانامه، بررسی نبود حساب تکراری و اعمال محدودسازی نرخ درخواست</bpmn:documentation>
+      <bpmn:incoming>Flow_02</bpmn:incoming>
+      <bpmn:incoming>Flow_05</bpmn:incoming>
+      <bpmn:outgoing>Flow_03</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_DataValid" name="داده ورودی معتبر است" default="Flow_04">
+      <bpmn:incoming>Flow_03</bpmn:incoming>
+      <bpmn:outgoing>Flow_04</bpmn:outgoing>
+      <bpmn:outgoing>Flow_06</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="Task_FixData" name="اصلاح داده نامعتبر بر پایه پیام خطا">
+      <bpmn:incoming>Flow_04</bpmn:incoming>
+      <bpmn:outgoing>Flow_05</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="Task_CreateAccount" name="ایجاد حساب کاربر و پروفایل داوطلبی در تراکنش پایگاه داده">
+      <bpmn:documentation>ایجاد رکورد کاربر با پرچم تأییدنشده، ایجاد پروفایل داوطلبی با وضعیت در انتظار تأیید، انتساب نقش داوطلب و ثبت رکورد حسابرسی</bpmn:documentation>
+      <bpmn:incoming>Flow_06</bpmn:incoming>
+      <bpmn:outgoing>Flow_07</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:sendTask id="Task_NotifyReviewers" name="ارسال ایمیل خوش‌آمد و اعلان داوطلب جدید به بررسی‌کنندگان">
+      <bpmn:documentation>انتشار وظیفه ارسال ایمیل در صف Redis و پردازش آن توسط کارگر Celery همراه با درج اعلان درون‌برنامه‌ای</bpmn:documentation>
+      <bpmn:incoming>Flow_07</bpmn:incoming>
+      <bpmn:outgoing>Flow_08</bpmn:outgoing>
+    </bpmn:sendTask>
+
+    <bpmn:userTask id="Task_ReviewRegistration" name="بررسی و راست‌آزمایی اطلاعات داوطلب">
+      <bpmn:documentation>راست‌آزمایی هویت، کد ملی، اطلاعات تماس و کامل بودن داده اعلامی داوطلب</bpmn:documentation>
+      <bpmn:incoming>Flow_08</bpmn:incoming>
+      <bpmn:outgoing>Flow_09</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_ReviewDecision" name="تصمیم بررسی‌کننده" default="Flow_11">
+      <bpmn:incoming>Flow_09</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_ActivateAccount" name="فعال‌سازی حساب و تغییر وضعیت پروفایل به فعال">
+      <bpmn:documentation>فعال‌سازی پرچم تأیید حساب، تغییر وضعیت پروفایل داوطلبی به فعال، ثبت رکورد حسابرسی و ارسال اعلان تأیید</bpmn:documentation>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_RecordRejection" name="ثبت رد ثبت‌نام همراه با دلیل و اطلاع‌رسانی">
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_CompleteProfile" name="تکمیل پروفایل، ثبت مهارت و اعلام دسترس‌پذیری">
+      <bpmn:documentation>ثبت اطلاعات تکمیلی، مهارت‌ها همراه با سطح تخصص و بازه‌های دسترس‌پذیری برای امکان تطابق با مأموریت‌ها</bpmn:documentation>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="EndEvent_ReadyForMission" name="داوطلب آماده دریافت مأموریت">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="EndEvent_Rejected" name="ثبت‌نام رد شد">
+      <bpmn:incoming>Flow_14</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_01" sourceRef="StartEvent_Registration" targetRef="Task_FillForm" />
+    <bpmn:sequenceFlow id="Flow_02" sourceRef="Task_FillForm" targetRef="Task_ValidateData" />
+    <bpmn:sequenceFlow id="Flow_03" sourceRef="Task_ValidateData" targetRef="Gateway_DataValid" />
+    <bpmn:sequenceFlow id="Flow_04" name="داده نامعتبر است" sourceRef="Gateway_DataValid" targetRef="Task_FixData" />
+    <bpmn:sequenceFlow id="Flow_05" sourceRef="Task_FixData" targetRef="Task_ValidateData" />
+    <bpmn:sequenceFlow id="Flow_06" name="داده معتبر است" sourceRef="Gateway_DataValid" targetRef="Task_CreateAccount" />
+    <bpmn:sequenceFlow id="Flow_07" sourceRef="Task_CreateAccount" targetRef="Task_NotifyReviewers" />
+    <bpmn:sequenceFlow id="Flow_08" sourceRef="Task_NotifyReviewers" targetRef="Task_ReviewRegistration" />
+    <bpmn:sequenceFlow id="Flow_09" sourceRef="Task_ReviewRegistration" targetRef="Gateway_ReviewDecision" />
+    <bpmn:sequenceFlow id="Flow_10" name="تأیید" sourceRef="Gateway_ReviewDecision" targetRef="Task_ActivateAccount" />
+    <bpmn:sequenceFlow id="Flow_11" name="رد" sourceRef="Gateway_ReviewDecision" targetRef="Task_RecordRejection" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_ActivateAccount" targetRef="Task_CompleteProfile" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_CompleteProfile" targetRef="EndEvent_ReadyForMission" />
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_RecordRejection" targetRef="EndEvent_Rejected" />
+
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Registration">
+    <bpmndi:BPMNPlane id="BPMNPlane_Registration" bpmnElement="Collaboration_Registration">
+
+      <bpmndi:BPMNShape id="Shape_Participant_Panah" bpmnElement="Participant_Panah" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="1660" height="540" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Lane_Volunteer" bpmnElement="Lane_Volunteer" isHorizontal="true">
+        <dc:Bounds x="190" y="80" width="1630" height="180" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Lane_System" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="190" y="260" width="1630" height="180" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Lane_Reviewer" bpmnElement="Lane_Reviewer" isHorizontal="true">
+        <dc:Bounds x="190" y="440" width="1630" height="180" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_StartEvent_Registration" bpmnElement="StartEvent_Registration">
+        <dc:Bounds x="242" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="222" y="195" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_FillForm" bpmnElement="Task_FillForm">
+        <dc:Bounds x="330" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_FixData" bpmnElement="Task_FixData">
+        <dc:Bounds x="540" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ValidateData" bpmnElement="Task_ValidateData">
+        <dc:Bounds x="330" y="310" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_DataValid" bpmnElement="Gateway_DataValid" isMarkerVisible="true">
+        <dc:Bounds x="565" y="325" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="545" y="382" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CreateAccount" bpmnElement="Task_CreateAccount">
+        <dc:Bounds x="700" y="310" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_NotifyReviewers" bpmnElement="Task_NotifyReviewers">
+        <dc:Bounds x="900" y="310" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ReviewRegistration" bpmnElement="Task_ReviewRegistration">
+        <dc:Bounds x="900" y="490" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Gateway_ReviewDecision" bpmnElement="Gateway_ReviewDecision" isMarkerVisible="true">
+        <dc:Bounds x="1105" y="505" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1085" y="562" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_RecordRejection" bpmnElement="Task_RecordRejection">
+        <dc:Bounds x="1240" y="490" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_Rejected" bpmnElement="EndEvent_Rejected">
+        <dc:Bounds x="1462" y="512" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1442" y="555" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_ActivateAccount" bpmnElement="Task_ActivateAccount">
+        <dc:Bounds x="1240" y="310" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_Task_CompleteProfile" bpmnElement="Task_CompleteProfile">
+        <dc:Bounds x="1240" y="130" width="150" height="80" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNShape id="Shape_EndEvent_ReadyForMission" bpmnElement="EndEvent_ReadyForMission">
+        <dc:Bounds x="1462" y="152" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1442" y="195" width="80" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_01" bpmnElement="Flow_01">
+        <di:waypoint x="278" y="170" />
+        <di:waypoint x="330" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_02" bpmnElement="Flow_02">
+        <di:waypoint x="405" y="210" />
+        <di:waypoint x="405" y="310" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_03" bpmnElement="Flow_03">
+        <di:waypoint x="480" y="350" />
+        <di:waypoint x="565" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_04" bpmnElement="Flow_04">
+        <di:waypoint x="590" y="325" />
+        <di:waypoint x="590" y="210" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="600" y="250" width="100" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_05" bpmnElement="Flow_05">
+        <di:waypoint x="540" y="170" />
+        <di:waypoint x="510" y="170" />
+        <di:waypoint x="510" y="270" />
+        <di:waypoint x="455" y="270" />
+        <di:waypoint x="455" y="310" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_06" bpmnElement="Flow_06">
+        <di:waypoint x="615" y="350" />
+        <di:waypoint x="700" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="618" y="315" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_07" bpmnElement="Flow_07">
+        <di:waypoint x="850" y="350" />
+        <di:waypoint x="900" y="350" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_08" bpmnElement="Flow_08">
+        <di:waypoint x="975" y="390" />
+        <di:waypoint x="975" y="490" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_09" bpmnElement="Flow_09">
+        <di:waypoint x="1050" y="530" />
+        <di:waypoint x="1105" y="530" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_10" bpmnElement="Flow_10">
+        <di:waypoint x="1130" y="505" />
+        <di:waypoint x="1130" y="350" />
+        <di:waypoint x="1240" y="350" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1140" y="410" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_11" bpmnElement="Flow_11">
+        <di:waypoint x="1155" y="530" />
+        <di:waypoint x="1240" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1170" y="495" width="50" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_12" bpmnElement="Flow_12">
+        <di:waypoint x="1315" y="310" />
+        <di:waypoint x="1315" y="210" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_13" bpmnElement="Flow_13">
+        <di:waypoint x="1390" y="170" />
+        <di:waypoint x="1462" y="170" />
+      </bpmndi:BPMNEdge>
+
+      <bpmndi:BPMNEdge id="Edge_Flow_14" bpmnElement="Flow_14">
+        <di:waypoint x="1390" y="530" />
+        <di:waypoint x="1462" y="530" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,45 @@
+%% دیاگرام کانتینر سامانه پناه - سطح دو مدل C4
+%% موضوع: واحدهای اجرایی قابل استقرار و پروتکل ارتباطی میان آن‌ها
+C4Container
+    title دیاگرام کانتینر سامانه پناه
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="2")
+
+    Person(volunteer, "داوطلب", "کاربر نقش volunteer")
+    Person(coordinator, "هماهنگ‌کننده", "کاربر نقش coordinator")
+    Person(admin, "مدیر سامانه", "کاربر نقش admin")
+
+    System_Boundary(panah, "سامانه پناه") {
+        Container(nginx, "دروازه وب Nginx", "Nginx Alpine", "پایان‌دهی TLS، مسیریابی درخواست‌ها به کلاینت و API، سرو فایل‌های ایستا و رسانه، محدودسازی نرخ درخواست و هدرهای امنیتی")
+        Container(spa, "کلاینت وب", "React 18، TypeScript، Vite، Material UI، RTL", "رابط کاربری تک‌صفحه‌ای فارسی شامل داشبورد، مدیریت رویداد و مأموریت، کارتابل درخواست‌ها و پروفایل داوطلب")
+        Container(api, "سرویس API", "Python، Django، Django REST Framework، Gunicorn", "پیاده‌سازی قواعد کاری در لایه سرویس، اعتبارسنجی، کنترل دسترسی مبتنی بر نقش و مجوز، صدور و اعتبارسنجی توکن JWT")
+        Container(worker, "کارگر پردازش نامتقارن", "Celery Worker", "ارسال ایمیل، تولید اعلان انبوه، محاسبه شاخص‌های داشبورد و کارهای سنگین غیرهمزمان")
+        Container(beat, "زمان‌بند کارها", "Celery Beat", "زمان‌بندی کارهای دوره‌ای مانند یادآوری مأموریت، بستن مأموریت‌های سرآمد و پاک‌سازی داده موقت")
+        ContainerDb(db, "پایگاه داده اصلی", "PostgreSQL 17", "ذخیره کاربران، نقش‌ها، مجوزها، پروفایل داوطلب، مهارت‌ها، رویدادها، مأموریت‌ها، درخواست‌ها، تخصیص‌ها، گزارش‌ها، اعلان‌ها، تیکت‌ها و رکوردهای حسابرسی")
+        ContainerDb(cache, "کارساز حافظه نهان و صف", "Redis 7", "صف پیام Celery، حافظه نهان پاسخ‌های پرتکرار، نگهداری وضعیت محدودسازی نرخ و فهرست سیاه توکن")
+        Container(files, "انبار فایل", "حجم اشتراکی Docker", "نگهداری تصویر پروفایل کاربران و پیوست گزارش‌های مأموریت")
+    }
+
+    System_Ext(smtp, "سرویس ایمیل SMTP", "MailHog در توسعه و کارساز سازمانی در بهره‌برداری")
+
+    Rel(volunteer, nginx, "درخواست HTTPS", "TLS 1.2+")
+    Rel(coordinator, nginx, "درخواست HTTPS", "TLS 1.2+")
+    Rel(admin, nginx, "درخواست HTTPS", "TLS 1.2+")
+
+    Rel(nginx, spa, "سرو دارایی‌های ساخته‌شده کلاینت", "HTTP")
+    Rel(nginx, api, "پروکسی معکوس مسیر api/v1", "HTTP")
+    Rel(nginx, files, "سرو مستقیم مسیر media و static", "خواندن از حجم")
+
+    Rel(spa, nginx, "فراخوانی REST با هدر Authorization Bearer", "JSON over HTTPS")
+    Rel(api, db, "خواندن و نوشتن با Django ORM", "TCP 5432")
+    Rel(api, cache, "خواندن و نوشتن حافظه نهان و انتشار وظیفه", "TCP 6379")
+    Rel(api, files, "بارگذاری و بازیابی فایل", "سیستم فایل")
+
+    Rel(worker, cache, "دریافت وظیفه از صف", "TCP 6379")
+    Rel(worker, db, "خواندن و نوشتن نتیجه پردازش", "TCP 5432")
+    Rel(worker, smtp, "ارسال ایمیل اعلان", "SMTP")
+    Rel(beat, cache, "انتشار وظایف زمان‌بندی‌شده", "TCP 6379")
+
+    UpdateElementStyle(api, $bgColor="#0B6E4F", $fontColor="#FFFFFF")
+    UpdateRelStyle(spa, nginx, $offsetY="-20")
+    UpdateRelStyle(api, db, $offsetY="-10")

@@ -182,7 +182,7 @@ function ProfileCompletionBanner({
       sx={{
         mb: 2.5,
         p: { xs: 2, md: 2.25 },
-        pr: { xs: 5.5, md: 6 },
+        pl: { xs: 5.5, md: 6 },
         borderRadius: 3,
         border: 1,
         borderColor: isTargetReached ? 'rgba(16, 185, 129, 0.35)' : 'rgba(34, 211, 238, 0.35)',
@@ -315,6 +315,7 @@ export default function ProfilePage() {
       phone: user.phone ?? '',
       city: user.volunteer_profile?.city ?? '',
       bio: user.volunteer_profile?.bio ?? '',
+      gender: user.volunteer_profile?.gender ?? 'unspecified',
       education: user.profile?.education ?? '',
       occupation: user.profile?.occupation ?? '',
       interests: user.profile?.interests ?? '',
@@ -588,6 +589,23 @@ export default function ProfilePage() {
                   fullWidth
                   size="small"
                 />
+                <TextField
+                  select
+                  label={`${t('fields.gender')}${optional}`}
+                  value={form.gender ?? 'unspecified'}
+                  onChange={(e) =>
+                    handleChange(
+                      'gender',
+                      e.target.value as UpdateProfileRequest['gender'],
+                    )
+                  }
+                  fullWidth
+                  size="small"
+                >
+                  <MenuItem value="female">{t('fields.genderFemale')}</MenuItem>
+                  <MenuItem value="male">{t('fields.genderMale')}</MenuItem>
+                  <MenuItem value="unspecified">{t('fields.genderUnspecified')}</MenuItem>
+                </TextField>
                 <TextField
                   label={`${t('fields.bio')}${optional}`}
                   value={form.bio ?? ''}

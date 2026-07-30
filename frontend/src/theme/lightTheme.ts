@@ -21,6 +21,7 @@ export const lightTheme = createTheme({
       styleOverrides: {
         body: {
           backgroundColor: lightColors.background.default,
+          fontFamily: '"Vazirmatn", Tahoma, sans-serif',
         },
       },
     },

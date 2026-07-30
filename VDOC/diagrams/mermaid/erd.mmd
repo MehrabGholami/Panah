@@ -1,0 +1,239 @@
+%% دیاگرام موجودیت رابطه سامانه پناه
+%% نام جدول‌ها بر پایه db_table مدل‌های Django تعریف شده است
+%% همه موجودیت‌ها از مدل پایه شناسه یکتای UUID و مهرهای زمانی ایجاد و ویرایش را به ارث می‌برند
+erDiagram
+    USER {
+        uuid id PK "شناسه یکتا"
+        string email UK "نشانی رایانامه و نام کاربری"
+        string password "درهم گذرواژه"
+        string phone "شماره تماس"
+        string first_name "نام"
+        string last_name "نام خانوادگی"
+        boolean is_active "فعال بودن حساب"
+        boolean is_staff "دسترسی به پیشخان مدیریت"
+        boolean is_approved "تأیید حساب توسط مدیر"
+        boolean is_superuser "ابرکاربر"
+        string avatar "مسیر تصویر نمایه"
+        datetime last_login "زمان آخرین ورود"
+        datetime created_at "زمان ایجاد"
+        datetime updated_at "زمان آخرین ویرایش"
+    }
+
+    USER_PROFILE {
+        uuid id PK "شناسه یکتا"
+        uuid user_id FK "ارجاع یک به یک به کاربر"
+        string education "تحصیلات"
+        string occupation "شغل"
+        text interests "علاقه‌مندی‌ها"
+        text address "نشانی محل سکونت"
+        string blood_type "گروه خونی"
+        string languages "زبان‌ها"
+        smallint years_of_experience "سال‌های تجربه"
+        date date_of_birth "تاریخ تولد"
+        string emergency_contact_name "نام تماس اضطراری"
+        string emergency_contact_phone "تلفن تماس اضطراری"
+        text medical_conditions "شرایط پزشکی"
+        text disability "توان‌یابی"
+    }
+
+    ROLE {
+        uuid id PK "شناسه یکتا"
+        string name UK "نام نمایشی نقش"
+        string slug UK "شناسه یکتای متنی نقش"
+        text description "توضیح نقش"
+        boolean is_system "نقش سامانه‌ای غیرقابل حذف"
+    }
+
+    PERMISSION {
+        uuid id PK "شناسه یکتا"
+        string codename UK "کد یکتای مجوز"
+        string name "نام نمایشی مجوز"
+        string app_label "برچسب حوزه کاری"
+        text description "توضیح مجوز"
+    }
+
+    USER_ROLE {
+        uuid id PK "شناسه یکتا"
+        uuid user_id FK "ارجاع به کاربر"
+        uuid role_id FK "ارجاع به نقش"
+    }
+
+    ROLE_PERMISSION {
+        uuid id PK "شناسه یکتا"
+        uuid role_id FK "ارجاع به نقش"
+        uuid permission_id FK "ارجاع به مجوز"
+    }
+
+    VOLUNTEER_PROFILE {
+        uuid id PK "شناسه یکتا"
+        uuid user_id FK "ارجاع یک به یک به کاربر"
+        string national_id UK "کد ملی یکتا"
+        string city "شهر محل سکونت"
+        text bio "معرفی کوتاه"
+        string status "وضعیت داوطلب"
+        json availability "بازه‌های دسترس‌پذیری"
+        json custom_skills "مهارت‌های آزاد اعلامی"
+    }
+
+    SKILL {
+        uuid id PK "شناسه یکتا"
+        string name UK "نام مهارت"
+        string category "دسته‌بندی مهارت"
+        text description "توضیح مهارت"
+    }
+
+    VOLUNTEER_SKILL {
+        uuid id PK "شناسه یکتا"
+        uuid volunteer_id FK "ارجاع به پروفایل داوطلب"
+        uuid skill_id FK "ارجاع به مهارت"
+        smallint proficiency "سطح تخصص"
+    }
+
+    DISASTER {
+        uuid id PK "شناسه یکتا"
+        string title "عنوان رویداد"
+        text description "شرح رویداد"
+        string disaster_type "نوع رویداد"
+        string severity "شدت رویداد"
+        string province "استان"
+        string city "شهر"
+        string location "نشانی دقیق"
+        datetime occurred_at "زمان وقوع"
+        json needs "نیازهای اعلامی"
+        integer affected_population "جمعیت متأثر"
+        string status "وضعیت رویداد"
+        json metadata "داده تکمیلی"
+    }
+
+    MISSION {
+        uuid id PK "شناسه یکتا"
+        uuid disaster_id FK "ارجاع به رویداد بحران"
+        uuid coordinator_id FK "ارجاع به کاربر هماهنگ‌کننده"
+        string title "عنوان مأموریت"
+        text description "شرح مأموریت"
+        string status "وضعیت مأموریت"
+        string priority "اولویت مأموریت"
+        string province "استان"
+        string city "شهر"
+        string location "نشانی محل اجرا"
+        datetime start_time "زمان شروع"
+        datetime end_time "زمان پایان"
+        boolean is_end_time_tba "پایان اعلام‌نشده"
+        integer required_volunteers "تعداد نیروی مورد نیاز"
+        text special_considerations "ملاحظات ویژه"
+        text equipment_needed "تجهیزات مورد نیاز"
+        text safety_notes "نکات ایمنی"
+        boolean is_visible_to_volunteers "نمایش به داوطلبان"
+        boolean allow_volunteer_applications "پذیرش درخواست همکاری"
+        json metadata "داده تکمیلی"
+    }
+
+    MISSION_REQUIRED_SKILL {
+        uuid id PK "شناسه یکتا"
+        uuid mission_id FK "ارجاع به مأموریت"
+        uuid skill_id FK "ارجاع به مهارت"
+        boolean is_required "الزامی بودن مهارت"
+    }
+
+    MISSION_APPLICATION {
+        uuid id PK "شناسه یکتا"
+        uuid mission_id FK "ارجاع به مأموریت"
+        uuid volunteer_id FK "ارجاع به پروفایل داوطلب"
+        text message "پیام داوطلب"
+        string status "وضعیت درخواست"
+        uuid reviewed_by_id FK "ارجاع به کاربر بررسی‌کننده"
+        datetime reviewed_at "زمان بررسی"
+        text review_note "یادداشت بررسی"
+    }
+
+    ASSIGNMENT {
+        uuid id PK "شناسه یکتا"
+        uuid mission_id FK "ارجاع به مأموریت"
+        uuid volunteer_id FK "ارجاع به پروفایل داوطلب"
+        string status "وضعیت تخصیص"
+    }
+
+    MISSION_REPORT {
+        uuid id PK "شناسه یکتا"
+        uuid mission_id FK "ارجاع به مأموریت"
+        uuid author_id FK "ارجاع به کاربر نویسنده"
+        text content "متن گزارش"
+        string status "وضعیت گزارش"
+    }
+
+    REPORT_ATTACHMENT {
+        uuid id PK "شناسه یکتا"
+        uuid report_id FK "ارجاع به گزارش مأموریت"
+        string file "مسیر فایل پیوست"
+    }
+
+    NOTIFICATION {
+        uuid id PK "شناسه یکتا"
+        uuid user_id FK "ارجاع به کاربر گیرنده"
+        string title "عنوان اعلان"
+        text message "متن اعلان"
+        datetime read_at "زمان خوانده شدن"
+        string channel "کانال ارسال"
+        string resource_type "نوع منبع مرتبط"
+        string resource_id "شناسه منبع مرتبط"
+    }
+
+    TICKET {
+        uuid id PK "شناسه یکتا"
+        string title "عنوان تیکت"
+        text description "شرح مسئله"
+        string status "وضعیت تیکت"
+        uuid author_id FK "ارجاع به کاربر صاحب تیکت"
+        uuid opened_by_id FK "ارجاع به کارشناس آغازکننده گفتگو"
+    }
+
+    TICKET_REPLY {
+        uuid id PK "شناسه یکتا"
+        uuid ticket_id FK "ارجاع به تیکت"
+        uuid author_id FK "ارجاع به کاربر پاسخ‌دهنده"
+        text body "متن پاسخ"
+        boolean is_staff_reply "پاسخ کارشناس"
+    }
+
+    AUDIT_LOG {
+        uuid id PK "شناسه یکتا"
+        uuid user_id "شناسه کاربر عامل"
+        string action "کنش انجام‌شده"
+        string resource_type "نوع منبع"
+        string resource_id "شناسه منبع"
+        string ip_address "نشانی IP"
+        string user_agent "عامل کاربر"
+        string correlation_id "شناسه همبستگی درخواست"
+        json metadata "داده تکمیلی رخداد"
+    }
+
+    USER ||--o| USER_PROFILE : "پروفایل تکمیلی دارد"
+    USER ||--o| VOLUNTEER_PROFILE : "پروفایل داوطلبی دارد"
+    USER ||--o{ USER_ROLE : "نقش‌های انتسابی دارد"
+    ROLE ||--o{ USER_ROLE : "به کاربران انتساب می‌یابد"
+    ROLE ||--o{ ROLE_PERMISSION : "مجوزها را در بر می‌گیرد"
+    PERMISSION ||--o{ ROLE_PERMISSION : "به نقش‌ها اعطا می‌شود"
+
+    VOLUNTEER_PROFILE ||--o{ VOLUNTEER_SKILL : "مهارت‌های ثبت‌شده دارد"
+    SKILL ||--o{ VOLUNTEER_SKILL : "در پروفایل داوطلبان ثبت می‌شود"
+    SKILL ||--o{ MISSION_REQUIRED_SKILL : "به عنوان نیاز مأموریت تعیین می‌شود"
+
+    DISASTER ||--o{ MISSION : "مأموریت‌های پاسخ دارد"
+    USER ||--o{ MISSION : "به عنوان هماهنگ‌کننده مدیریت می‌کند"
+    MISSION ||--o{ MISSION_REQUIRED_SKILL : "مهارت‌های مورد نیاز دارد"
+    MISSION ||--o{ MISSION_APPLICATION : "درخواست‌های همکاری دریافت می‌کند"
+    MISSION ||--o{ ASSIGNMENT : "تخصیص‌های نیرو دارد"
+    MISSION ||--o{ MISSION_REPORT : "گزارش‌های اجرا دارد"
+
+    VOLUNTEER_PROFILE ||--o{ MISSION_APPLICATION : "درخواست همکاری ارسال می‌کند"
+    VOLUNTEER_PROFILE ||--o{ ASSIGNMENT : "به مأموریت تخصیص می‌یابد"
+    USER |o--o{ MISSION_APPLICATION : "درخواست را بررسی می‌کند"
+
+    MISSION_REPORT ||--o{ REPORT_ATTACHMENT : "پیوست دارد"
+    USER ||--o{ MISSION_REPORT : "گزارش را می‌نویسد"
+
+    USER ||--o{ NOTIFICATION : "اعلان دریافت می‌کند"
+    USER ||--o{ TICKET : "تیکت پشتیبانی ثبت می‌کند"
+    USER |o--o{ TICKET : "گفتگوی مستقیم آغاز می‌کند"
+    TICKET ||--o{ TICKET_REPLY : "پاسخ دارد"
+    USER ||--o{ TICKET_REPLY : "پاسخ ثبت می‌کند"

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  دیاگرام بلوکی معماری سامانه مدیریت بحران و داوطلبان پناه
+  قابل باز شدن با draw.io و diagrams.net و افزونه Draw.io Integration
+  ساختار: لایه کاربران، لایه مرزی، لایه ارائه، لایه کاربرد، لایه دامنه، لایه زیرساخت، لایه داده و پردازش نامتقارن
+-->
+<mxfile host="app.diagrams.net" agent="Panah SRS Documentation" type="device" version="24.7.7">
+  <diagram id="panah-architecture-block" name="معماری بلوکی سامانه پناه">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="معماری بلوکی سامانه مدیریت بحران و داوطلبان پناه" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=26;fontStyle=1;fontColor=#0A2B20;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1400" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerUsers" value="لایه کاربران و دستگاه‌ها" style="swimlane;html=1;whiteSpace=wrap;startSize=32;horizontal=1;fillColor=#EEF4FF;strokeColor=#2A5DA8;fontSize=16;fontStyle=1;fontColor=#10243F;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1400" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="uVol" value="داوطلب&#xa;نقش volunteer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2A5DA8;fontSize=13;fontColor=#10243F;" vertex="1" parent="layerUsers">
+          <mxGeometry x="30" y="48" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uCoord" value="هماهنگ‌کننده&#xa;نقش coordinator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2A5DA8;fontSize=13;fontColor=#10243F;" vertex="1" parent="layerUsers">
+          <mxGeometry x="290" y="48" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uAdmin" value="مدیر سامانه&#xa;نقش admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F1FF;strokeColor=#2A5DA8;fontSize=13;fontColor=#10243F;" vertex="1" parent="layerUsers">
+          <mxGeometry x="550" y="48" width="230" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uBrowser" value="مرورگر وب رومیزی و همراه با پشتیبانی از چیدمان راست‌چین فارسی" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E8FF;strokeColor=#6B2FA8;fontSize=13;fontColor=#2A1043;" vertex="1" parent="layerUsers">
+          <mxGeometry x="850" y="48" width="500" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerEdge" value="لایه مرزی و کنترل‌های امنیتی شبکه" style="swimlane;html=1;whiteSpace=wrap;startSize=32;horizontal=1;fillColor=#F6EEFF;strokeColor=#6B2FA8;fontSize=16;fontStyle=1;fontColor=#2A1043;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="200" width="1400" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="eFirewall" value="دیوار آتش سازمانی&#xa;اجازه ورود تنها روی درگاه ۸۰ و ۴۴۳" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;fillColor=#F3E8FF;strokeColor=#6B2FA8;fontSize=13;fontColor=#2A1043;" vertex="1" parent="layerEdge">
+          <mxGeometry x="30" y="46" width="290" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="eNginx" value="دروازه Nginx&#xa;پایان‌دهی TLS، پروکسی معکوس مسیر api/v1، سرو فایل ایستا و رسانه" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E4D4FA;strokeColor=#6B2FA8;fontSize=13;fontStyle=1;fontColor=#2A1043;" vertex="1" parent="layerEdge">
+          <mxGeometry x="360" y="46" width="560" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="eSecurity" value="محدودسازی نرخ درخواست، هدرهای امنیتی، سیاست امنیت محتوا و ثبت سیاهه دسترسی" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#FFF3F3;strokeColor=#B3261E;fontSize=13;fontColor=#410E0B;" vertex="1" parent="layerEdge">
+          <mxGeometry x="960" y="46" width="390" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerFront" value="لایه ارائه — کلاینت وب تک‌صفحه‌ای React 18 و TypeScript و Vite و Material UI" style="swimlane;html=1;whiteSpace=wrap;startSize=32;horizontal=1;fillColor=#EAF7F1;strokeColor=#0B6E4F;fontSize=16;fontStyle=1;fontColor=#0A2B20;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="345" width="1400" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="fRouter" value="مسیریاب و نگهبان دسترسی&#xa;ProtectedRoute و GuestRoute" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="30" y="44" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fAuth" value="احراز هویت&#xa;ورود، ثبت‌نام، پروفایل" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="305" y="44" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fDash" value="داشبورد و نمودار شاخص‌ها" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="580" y="44" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fMission" value="رویداد بحران، مأموریت و کارتابل درخواست‌ها" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="855" y="44" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fAdmin" value="مدیریت کاربر، نقش و حسابرسی" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="1115" y="44" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fVolunteer" value="داوطلب، مهارت و دسترس‌پذیری" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="30" y="105" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fReport" value="گزارش مأموریت و پیوست" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="305" y="105" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fNotif" value="اعلان و تیکت پشتیبانی" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="580" y="105" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fApi" value="کلاینت HTTP و حافظه نهان پرسمان&#xa;مدیریت توکن و تازه‌سازی خودکار" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFE3D2;strokeColor=#0B6E4F;fontSize=12;fontStyle=1;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="855" y="105" width="255" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="fI18n" value="سامانه طراحی، بومی‌سازی فارسی و راست‌چین" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D8EFE4;strokeColor=#0B6E4F;fontSize=12;fontColor=#0A2B20;" vertex="1" parent="layerFront">
+          <mxGeometry x="1115" y="105" width="255" height="52" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerApi" value="سرویس API — Python و Django و Django REST Framework با معماری لایه‌ای" style="swimlane;html=1;whiteSpace=wrap;startSize=32;horizontal=1;fillColor=#F1FAF5;strokeColor=#0E7C66;fontSize=16;fontStyle=1;fontColor=#04302A;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="540" width="1400" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="aPresentation" value="لایه ارائه — نماها و مسیرهای REST، سریالایزرها، کلاس‌های مجوز، میان‌افزار حسابرسی و شناسه همبستگی، مستندات OpenAPI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CDEDE1;strokeColor=#0E7C66;fontSize=13;fontStyle=1;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="30" y="42" width="1340" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="aAuth" value="سرویس احراز هویت و توکن" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="30" y="100" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aIam" value="سرویس کاربران، نقش و مجوز" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="255" y="100" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aVolunteer" value="سرویس داوطلب و مهارت" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="480" y="100" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aDisaster" value="سرویس رویداد بحران" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="705" y="100" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aMission" value="سرویس مأموریت" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFE3D2;strokeColor=#0E7C66;fontSize=12;fontStyle=1;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="930" y="100" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aApplication" value="سرویس درخواست همکاری" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFE3D2;strokeColor=#0E7C66;fontSize=12;fontStyle=1;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="1155" y="100" width="215" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aAssignment" value="سرویس تخصیص" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFE3D2;strokeColor=#0E7C66;fontSize=12;fontStyle=1;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="30" y="160" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aReport" value="سرویس گزارش" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="255" y="160" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aNotification" value="سرویس اعلان" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="480" y="160" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aTicket" value="سرویس تیکت پشتیبانی" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="705" y="160" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aDashboard" value="سرویس داشبورد و شاخص‌ها" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F5EE;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerApi">
+          <mxGeometry x="930" y="160" width="210" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="aAudit" value="سرویس حسابرسی" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1E0;strokeColor=#B26A00;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerApi">
+          <mxGeometry x="1155" y="160" width="215" height="46" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerDomain" value="لایه دامنه" style="swimlane;html=1;whiteSpace=wrap;startSize=30;horizontal=1;fillColor=#FFFBF0;strokeColor=#B26A00;fontSize=15;fontStyle=1;fontColor=#3D2400;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="680" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="dEntities" value="موجودیت‌ها و اشیای مقداری" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1E0;strokeColor=#B26A00;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerDomain">
+          <mxGeometry x="20" y="42" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dEnums" value="شمارش وضعیت و قواعد گذار مجاز" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1E0;strokeColor=#B26A00;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerDomain">
+          <mxGeometry x="240" y="42" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dExc" value="استثناهای دامنه و پیام خطای فارسی" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1E0;strokeColor=#B26A00;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerDomain">
+          <mxGeometry x="460" y="42" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerInfra" value="لایه زیرساخت" style="swimlane;html=1;whiteSpace=wrap;startSize=30;horizontal=1;fillColor=#F5F7F9;strokeColor=#5F6B7A;fontSize=15;fontStyle=1;fontColor=#1F2933;align=center;" vertex="1" parent="1">
+          <mxGeometry x="760" y="800" width="680" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="iRepo" value="مخازن داده و Django ORM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7EBEF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="layerInfra">
+          <mxGeometry x="20" y="42" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="iCache" value="آداپتور حافظه نهان و صف وظیفه" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7EBEF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="layerInfra">
+          <mxGeometry x="240" y="42" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="iFileMail" value="آداپتور ذخیره فایل و ارسال ایمیل" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E7EBEF;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="layerInfra">
+          <mxGeometry x="460" y="42" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerData" value="لایه داده و پیام‌رسانی" style="swimlane;html=1;whiteSpace=wrap;startSize=30;horizontal=1;fillColor=#FFF8E8;strokeColor=#B26A00;fontSize=15;fontStyle=1;fontColor=#3D2400;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="940" width="900" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="dbPg" value="PostgreSQL 17&#xa;پایگاه داده اصلی سامانه" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#FFE7BF;strokeColor=#B26A00;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerData">
+          <mxGeometry x="30" y="45" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="dbRedis" value="Redis 7&#xa;حافظه نهان و صف پیام و فهرست سیاه توکن" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=12;whiteSpace=wrap;html=1;fillColor=#FFE7BF;strokeColor=#B26A00;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerData">
+          <mxGeometry x="320" y="45" width="250" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="dbFiles" value="انبار فایل رسانه&#xa;تصویر نمایه و پیوست گزارش" style="shape=folder;fontStyle=0;spacingTop=12;tabWidth=80;tabHeight=18;tabPosition=right;html=1;whiteSpace=wrap;fillColor=#F0E2C8;strokeColor=#8A6D3B;fontSize=12;fontColor=#3D2400;" vertex="1" parent="layerData">
+          <mxGeometry x="610" y="45" width="250" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="layerAsync" value="پردازش نامتقارن" style="swimlane;html=1;whiteSpace=wrap;startSize=30;horizontal=1;fillColor=#EAF7F1;strokeColor=#0E7C66;fontSize=15;fontStyle=1;fontColor=#04302A;align=center;" vertex="1" parent="1">
+          <mxGeometry x="980" y="940" width="460" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="wWorker" value="کارگر Celery&#xa;ارسال ایمیل، اعلان انبوه، رد خودکار تخصیص سرآمد" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#CDEDE1;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerAsync">
+          <mxGeometry x="20" y="45" width="200" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="wBeat" value="زمان‌بند Celery Beat&#xa;وظایف دوره‌ای و یادآوری" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#CDEDE1;strokeColor=#0E7C66;fontSize=12;fontColor=#04302A;" vertex="1" parent="layerAsync">
+          <mxGeometry x="240" y="45" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="extSmtp" value="سرویس ایمیل SMTP&#xa;MailHog در توسعه و کارساز سازمانی در بهره‌برداری" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#F1F3F5;strokeColor=#5F6B7A;fontSize=12;fontColor=#1F2933;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="1100" width="320" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="noteSecurity" value="کنترل‌های عرضی سامانه&#xa;احراز هویت با توکن و تازه‌سازی امن&#xa;کنترل دسترسی مبتنی بر نقش و مجوز&#xa;اعتبارسنجی دوسویه ورودی&#xa;ثبت حسابرسی همه کنش‌های حساس&#xa;شناسه همبستگی در همه سیاهه‌ها&#xa;رمزنگاری در انتقال با TLS" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=right;fillColor=#FFF3F3;strokeColor=#B3261E;fontSize=12;fontColor=#410E0B;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1100" width="330" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="noteQuality" value="ویژگی‌های کیفی هدف&#xa;زمان پاسخ صدک نود و پنجم کمتر از یک ثانیه برای پرسمان‌های فهرست&#xa;دسترس‌پذیری نود و نه و نیم درصد در ساعات بحران&#xa;پشتیبانی از پانصد کاربر همزمان&#xa;پشتیبان‌گیری شبانه با نگه‌داری سی روزه" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=right;fillColor=#EEF4FF;strokeColor=#2A5DA8;fontSize=12;fontColor=#10243F;" vertex="1" parent="1">
+          <mxGeometry x="400" y="1100" width="360" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="noteDeploy" value="بسته‌بندی و استقرار&#xa;همه سرویس‌ها در Docker Compose روی شبکه پل اختصاصی&#xa;تنها Nginx درگاه میزبان منتشر می‌کند&#xa;بررسی سلامت برای پایگاه داده و حافظه نهان و سرویس API" style="shape=note;whiteSpace=wrap;html=1;size=20;verticalAlign=top;align=right;fillColor=#F6EEFF;strokeColor=#6B2FA8;fontSize=12;fontColor=#2A1043;" vertex="1" parent="1">
+          <mxGeometry x="790" y="1100" width="300" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edgeUsersBrowser" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2A5DA8;endArrow=block;" edge="1" parent="1" source="uCoord" target="uBrowser">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeBrowserFirewall" value="HTTPS درگاه ۴۴۳" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B2FA8;endArrow=block;fontSize=11;" edge="1" parent="1" source="uBrowser" target="eNginx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeFirewallNginx" value="عبور از دیوار آتش" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B2FA8;endArrow=block;fontSize=11;" edge="1" parent="1" source="eFirewall" target="eNginx">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeNginxFront" value="سرو دارایی‌های کلاینت" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0B6E4F;endArrow=block;fontSize=11;" edge="1" parent="1" source="eNginx" target="fRouter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeNginxApi" value="پروکسی معکوس مسیر api/v1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0E7C66;endArrow=block;fontSize=11;" edge="1" parent="1" source="eNginx" target="aPresentation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeFrontApi" value="فراخوانی REST با توکن Bearer" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0E7C66;endArrow=block;dashed=1;fontSize=11;" edge="1" parent="1" source="fApi" target="aPresentation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeApiDomain" value="اعمال قواعد گذار وضعیت" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B26A00;endArrow=block;fontSize=11;" edge="1" parent="1" source="aMission" target="dEnums">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeApiInfra" value="دسترسی به مخازن داده" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#5F6B7A;endArrow=block;fontSize=11;" edge="1" parent="1" source="aApplication" target="iRepo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeInfraPg" value="TCP درگاه ۵۴۳۲" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B26A00;endArrow=block;fontSize=11;" edge="1" parent="1" source="iRepo" target="dbPg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeInfraRedis" value="TCP درگاه ۶۳۷۹" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B26A00;endArrow=block;fontSize=11;" edge="1" parent="1" source="iCache" target="dbRedis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeInfraFiles" value="سیستم فایل" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8A6D3B;endArrow=block;fontSize=11;" edge="1" parent="1" source="iFileMail" target="dbFiles">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeRedisWorker" value="تحویل وظیفه از صف" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0E7C66;endArrow=block;fontSize=11;" edge="1" parent="1" source="dbRedis" target="wWorker">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeBeatRedis" value="انتشار وظیفه دوره‌ای" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0E7C66;endArrow=block;dashed=1;fontSize=11;" edge="1" parent="1" source="wBeat" target="dbRedis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeWorkerSmtp" value="ارسال ایمیل اعلان با پروتکل SMTP" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#5F6B7A;endArrow=block;fontSize=11;" edge="1" parent="1" source="wWorker" target="extSmtp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeWorkerPg" value="خواندن و نوشتن نتیجه پردازش" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B26A00;endArrow=block;dashed=1;fontSize=11;" edge="1" parent="1" source="wWorker" target="dbPg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeNginxFiles" value="سرو مستقیم فایل ایستا و رسانه" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#8A6D3B;endArrow=block;dashed=1;fontSize=11;" edge="1" parent="1" source="eNginx" target="dbFiles">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeAuditPg" value="ثبت رکورد حسابرسی" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#B26A00;endArrow=block;dashed=1;fontSize=11;" edge="1" parent="1" source="aAudit" target="iRepo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edgeNotifRedis" value="انتشار وظیفه ارسال اعلان" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0E7C66;endArrow=block;dashed=1;fontSize=11;" edge="1" parent="1" source="aNotification" target="iCache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

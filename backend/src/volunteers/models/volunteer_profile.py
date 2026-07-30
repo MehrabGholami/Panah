@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 
 from common.models.base_model import BaseModel
-from volunteers.domain.enums import VolunteerStatus
+from volunteers.domain.enums import VolunteerGender, VolunteerStatus
 
 
 class VolunteerProfile(BaseModel):
@@ -14,6 +14,12 @@ class VolunteerProfile(BaseModel):
     national_id = models.CharField(max_length=20, unique=True, db_index=True)
     city = models.CharField(max_length=100, blank=True)
     bio = models.TextField(blank=True)
+    gender = models.CharField(
+        max_length=20,
+        choices=VolunteerGender.choices(),
+        default=VolunteerGender.UNSPECIFIED,
+        db_index=True,
+    )
     status = models.CharField(
         max_length=30,
         choices=VolunteerStatus.choices(),

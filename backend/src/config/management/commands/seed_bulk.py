@@ -1,7 +1,6 @@
-import os
-
 from django.core.management.base import BaseCommand
 
+from common.utils.env_credentials import get_admin_email, get_admin_password, get_seed_password
 from config.application.services.bulk_seed_service import BulkSeedService
 from config.data.persian_seed_data import SEED_EMAIL_DOMAIN
 
@@ -30,8 +29,8 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--password",
-            default=os.environ.get("SEED_PASSWORD", "SeedPass123!"),
-            help="Password for all seeded volunteer/coordinator accounts.",
+            default=None,
+            help="Password for seeded volunteer/coordinator accounts (defaults to SEED_PASSWORD).",
         )
         parser.add_argument(
             "--seed",
@@ -46,23 +45,28 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--admin-email",
-            default=os.environ.get("ADMIN_EMAIL", "InvesticaCO@gmail.com"),
+            default=None,
+            help="Admin email (defaults to ADMIN_EMAIL).",
         )
         parser.add_argument(
             "--admin-password",
-            default=os.environ.get("ADMIN_PASSWORD", "Investica003"),
+            default=None,
+            help="Admin password (defaults to ADMIN_PASSWORD).",
         )
 
     def handle(self, *args, **options):
+        password = options["password"] or get_seed_password()
+        admin_email = options["admin_email"] or get_admin_email()
+        admin_password = options["admin_password"] or get_admin_password()
         service = BulkSeedService(seed=options["seed"])
         result = service.run(
             volunteers=options["volunteers"],
             disasters=options["disasters"],
             missions=options["missions"],
-            password=options["password"],
+            password=password,
             clear=options["clear"],
-            admin_email=options["admin_email"],
-            admin_password=options["admin_password"],
+            admin_email=admin_email,
+            admin_password=admin_password,
         )
 
         self.stdout.write(self.style.SUCCESS(f"Batch ID: {result.batch_id}"))
@@ -77,4 +81,4 @@ class Command(BaseCommand):
         self.stdout.write("")
         self.stdout.write(f"Sample volunteer: volunteer1{SEED_EMAIL_DOMAIN}")
         self.stdout.write(f"Sample coordinator: coordinator1{SEED_EMAIL_DOMAIN}")
-        self.stdout.write(f"Password: {options['password']}")
+        self.stdout.write(f"Password: {password}")

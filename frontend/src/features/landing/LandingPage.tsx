@@ -1,6 +1,6 @@
 import { Box, useTheme } from '@mui/material';
 import { PublicSiteHeader } from '@/shared/components/ui';
-import { LandingAuthPanel, LandingDateTimePanel, LandingVersePanel } from './components/LandingSections';
+import { LandingLoginPanel, LandingRegisterPanel, LandingVersePanel } from './components/LandingSections';
 
 const homeHeroSrc = '/home-hero.png';
 
@@ -82,8 +82,8 @@ export default function LandingPage() {
             flexDirection: 'column',
             justifyContent: { xs: 'flex-end', md: 'flex-end' },
             px: { xs: 2, sm: 3, md: 4 },
-            pb: { xs: 3, md: 4 },
-            pt: { md: 2 },
+            pb: { xs: 2.5, md: 3 },
+            pt: { md: 1.5 },
             minHeight: 0,
             overflow: 'visible',
             width: '100%',
@@ -93,54 +93,57 @@ export default function LandingPage() {
             sx={{
               position: 'relative',
               width: '100%',
-              minHeight: { md: 220 },
               display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              alignItems: { xs: 'center', md: 'flex-start' },
-              justifyContent: { xs: 'center', md: 'space-between' },
-              gap: { xs: 2, md: 3 },
-              direction: { md: 'ltr' },
+              flexDirection: { xs: 'column', lg: 'row' },
+              alignItems: { xs: 'center', lg: 'flex-start' },
+              justifyContent: { xs: 'center', lg: 'space-between' },
+              gap: { xs: 1.5, md: 2, lg: 2.5 },
+              flexWrap: { md: 'wrap', lg: 'nowrap' },
+              direction: { lg: 'ltr' },
             }}
           >
+            {/* Visual left (LTR): Login */}
             <Box
               sx={{
-                order: { xs: 3, md: 1 },
-                width: { xs: '100%', md: 'auto' },
+                order: { xs: 3, lg: 1 },
+                width: { xs: '100%', sm: 'auto' },
                 display: 'flex',
-                justifyContent: { xs: 'center', md: 'flex-start' },
-                alignItems: { md: 'flex-start' },
+                justifyContent: { xs: 'center', lg: 'flex-start' },
                 flexShrink: 0,
-                pl: { md: 1 },
+                pl: { lg: 1 },
               }}
             >
-              <LandingDateTimePanel />
+              <LandingLoginPanel />
             </Box>
 
             <Box
               sx={{
-                order: { xs: 2, md: 2 },
-                width: { xs: '100%', md: 'auto' },
+                order: { xs: 2, lg: 2 },
+                width: { xs: '100%', lg: 'auto' },
                 display: 'flex',
                 justifyContent: 'center',
-                alignItems: { md: 'flex-start' },
-                flex: { md: '1 1 auto' },
-                px: { md: 1 },
+                alignItems: 'flex-start',
+                alignSelf: { xs: 'stretch', lg: 'flex-start' },
+                flex: { lg: '1 1 auto' },
+                minWidth: 0,
+                px: { lg: 1 },
               }}
             >
               <LandingVersePanel />
             </Box>
 
+            {/* Visual right (LTR): Register */}
             <Box
               sx={{
-                order: { xs: 1, md: 3 },
+                order: { xs: 1, lg: 3 },
                 flexShrink: 0,
+                width: { xs: '100%', sm: 'auto' },
                 display: 'flex',
-                justifyContent: { xs: 'center', md: 'flex-end' },
-                alignItems: { md: 'flex-start' },
-                pr: { md: 1 },
+                justifyContent: { xs: 'center', lg: 'flex-end' },
+                pr: { lg: 1 },
               }}
             >
-              <LandingAuthPanel />
+              <LandingRegisterPanel />
             </Box>
           </Box>
         </Box>

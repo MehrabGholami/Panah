@@ -48,11 +48,14 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.development
+      BACKUP_ROOT: /backups
+      LOG_DIR: /var/log/app
     volumes:
       - ./backend:/app
       - ./media:/app/media
       - ./static:/app/staticfiles
       - ./logs:/var/log/app
+      - ./database/backups:/backups
     depends_on:
       volunteer-management-postgres:
         condition: service_healthy
@@ -61,11 +64,11 @@ services:
     networks:
       - volunteer-management-net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/api/v1/health/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
 
   volunteer-management-celery:
     build:
@@ -82,12 +85,17 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.development
+      BACKUP_ROOT: /backups
+      LOG_DIR: /var/log/app
     volumes:
       - ./backend:/app
       - ./media:/app/media
       - ./logs:/var/log/app
+      - ./database/backups:/backups
     depends_on:
-      volunteer-management-backend:
+      volunteer-management-postgres:
+        condition: service_healthy
+      volunteer-management-redis:
         condition: service_healthy
     networks:
       - volunteer-management-net
@@ -107,8 +115,13 @@ services:
       - .env
     environment:
       DJANGO_SETTINGS_MODULE: config.settings.development
+      BACKUP_ROOT: /backups
+      LOG_DIR: /var/log/app
     volumes:
       - ./backend:/app
+      - ./media:/app/media
+      - ./logs:/var/log/app
+      - ./database/backups:/backups
     depends_on:
       volunteer-management-redis:
         condition: service_healthy
@@ -126,7 +139,6 @@ services:
       VITE_APP_NAME: ${VITE_APP_NAME:-پناه}
     volumes:
       - ./frontend:/app
-      - C:/Users/Mehrab/Desktop/meem:/meem:ro
       - /app/node_modules
     networks:
       - volunteer-management-net
@@ -136,8 +148,8 @@ services:
     container_name: volunteer-management-mailhog
     restart: unless-stopped
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
     networks:
       - volunteer-management-net
 
@@ -153,7 +165,7 @@ services:
       - volunteer-management-pgadmin-data:/var/lib/pgadmin
       - ./infrastructure/pgadmin/servers.json:/pgadmin4/servers.json:ro
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     depends_on:
       volunteer-management-postgres:
         condition: service_healthy
@@ -165,8 +177,8 @@ services:
     container_name: volunteer-management-nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d:ro

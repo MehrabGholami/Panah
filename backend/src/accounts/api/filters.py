@@ -24,14 +24,23 @@ class UserFilterSet(django_filters.FilterSet):
     def filter_search(self, queryset, name, value):
         if not value:
             return queryset
-        return queryset.filter(
-            Q(email__icontains=value)
-            | Q(first_name__icontains=value)
-            | Q(last_name__icontains=value)
-            | Q(phone__icontains=value)
-            | Q(volunteer_profile__national_id__icontains=value)
-            | Q(volunteer_profile__city__icontains=value)
-        ).distinct()
+        value = value.strip()
+        variants = {value}
+        # Match both Persian and Arabic Yeh/Kaf forms from keyboards.
+        variants.add(value.replace("ی", "ي").replace("ک", "ك"))
+        variants.add(value.replace("ي", "ی").replace("ك", "ک"))
+
+        query = Q()
+        for term in variants:
+            query |= (
+                Q(email__icontains=term)
+                | Q(first_name__icontains=term)
+                | Q(last_name__icontains=term)
+                | Q(phone__icontains=term)
+                | Q(volunteer_profile__national_id__icontains=term)
+                | Q(volunteer_profile__city__icontains=term)
+            )
+        return queryset.filter(query).distinct()
 
     def filter_city(self, queryset, name, value):
         if not value:
