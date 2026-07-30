@@ -17,8 +17,7 @@
 
 <p align="center">
   Developed by<br/>
-  <img src="VDOC/images/investica-mark.svg" alt="Investica" width="36" height="36" /><br/>
-  <strong>Investica Group</strong>
+  <img src="VDOC/images/investica-logo.png" alt="Investica — Smart solutions for sustainable productivity" width="280" />
 </p>
 
 ---
