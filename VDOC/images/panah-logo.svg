@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="640" viewBox="0 0 512 640" role="img" aria-label="Panah">
+  <rect x="96" y="32" width="320" height="320" rx="72" fill="#0B6B4D"/>
+  <!-- Upward shelter mark -->
+  <path
+    fill="#FFFFFF"
+    d="M256 88
+       L338 186
+       H298
+       V214
+       L356 308
+       H308
+       L256 236
+       L204 308
+       H156
+       L214 214
+       V186
+       H176
+       Z"
+  />
+  <text
+    x="256"
+    y="500"
+    text-anchor="middle"
+    font-family="Segoe UI, Helvetica Neue, Arial, sans-serif"
+    font-size="84"
+    font-weight="700"
+    fill="#1F2328"
+  >Panah</text>
+</svg>

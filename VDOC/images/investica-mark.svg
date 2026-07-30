@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="Investica">
+  <defs>
+    <path id="arm" d="
+      M86 22
+      h20
+      a10 10 0 0 1 10 10
+      v14
+      a8 8 0 0 1 -3 6
+      l-17 14
+      a8 8 0 0 1 -10 0
+      l-17 -14
+      a8 8 0 0 1 -3 -6
+      V32
+      a10 10 0 0 1 10 -10
+      z
+    "/>
+  </defs>
+  <use href="#arm" fill="#1A1A1A"/>
+  <use href="#arm" fill="#1A1A1A" transform="rotate(120 96 96)"/>
+  <use href="#arm" fill="#1A1A1A" transform="rotate(240 96 96)"/>
+</svg>

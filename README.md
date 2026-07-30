@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="VDOC/images/panah-mark.svg" alt="Panah" width="96" height="96" />
+  <img src="VDOC/images/panah-logo-lockup.png" alt="Panah" width="180" />
 </p>
-
-<h1 align="center">Panah</h1>
 
 <p align="center">
   <strong>Crisis volunteer management platform</strong><br/>
@@ -17,7 +15,11 @@
   <img alt="License" src="https://img.shields.io/badge/License-Proprietary-red?style=flat-square" />
 </p>
 
-<p align="center">Developed by <strong>Investica Group</strong></p>
+<p align="center">
+  Developed by<br/>
+  <img src="VDOC/images/investica-mark.svg" alt="Investica" width="36" height="36" /><br/>
+  <strong>Investica Group</strong>
+</p>
 
 ---
 
