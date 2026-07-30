@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="~F'G">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B6E4F"/>
+      <stop offset="100%" stop-color="#084C37"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="40" fill="url(#bg)"/>
+  <!-- Stylized shelter / three-arm mark -->
+  <g fill="none" stroke="#F4F7F5" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M96 42 L96 96"/>
+    <path d="M96 96 L52 148"/>
+    <path d="M96 96 L140 148"/>
+    <path d="M96 42 L68 72"/>
+    <path d="M96 42 L124 72"/>
+    <path d="M52 148 L72 128"/>
+    <path d="M140 148 L120 128"/>
+  </g>
+  <circle cx="96" cy="96" r="8" fill="#F4F7F5"/>
+</svg>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/panah-mark.svg" alt="پناه — Panah" width="112" height="112" />
+  <img src="VDOC/images/panah-mark.svg" alt="پناه — Panah" width="112" height="112" />
 </p>
 
 <h1 align="center">پناه (Panah)</h1>
@@ -14,6 +14,7 @@
   <img alt="Docker" src="https://img.shields.io/badge/runtime-Docker%20Compose-2496ED?style=flat-square&logo=docker&logoColor=white" />
   <img alt="Python" src="https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white" />
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?style=flat-square&logo=postgresql&logoColor=white" />
   <img alt="License" src="https://img.shields.io/badge/license-Proprietary-red?style=flat-square" />
 </p>
 
@@ -48,16 +49,16 @@
 
 ## درباره سامانه
 
-**پناه** یک سامانه وب یکپارچه برای هماهنگی نیروهای داوطلب در شرایط بحران است. ستاد عملیات (مدیر و هماهنگ‌کننده) رویداد و مأموریت تعریف می‌کند؛ داوطلبان پروفایل و مهارت ثبت می‌کنند، درخواست همکاری می‌فرستند، تخصیص را می‌پذیرند، حضور ثبت می‌کنند و گزارش می‌دهند.
+**پناه** سامانه وب یکپارچه برای هماهنگی نیروهای داوطلب در شرایط بحران است:
 
-از نظر معماری نرم‌افزار، پناه یک **Modular Monolith** است:
+- **ستاد عملیات** (مدیر / هماهنگ‌کننده): ثبت بحران، تعریف و انتشار مأموریت، داوری درخواست‌ها، تخصیص نیرو، وظایف و گزارش
+- **داوطلب**: پروفایل و مهارت، درخواست همکاری، پذیرش تخصیص، ثبت حضور، گزارش وضعیت وظیفه
 
-| لایه | نقش |
-|------|-----|
-| React SPA (RTL / فارسی) | رابط کاربری تک‌صفحه‌ای |
-| Django + DRF | منطق کسب‌وکار، RBAC، قرارداد REST در `/api/v1` |
-| PostgreSQL + Redis + Celery | پایداری داده، صف، کارهای پس‌زمینه |
-| Nginx | دروازه وب، پروکسی معکوس، فایل‌های ایستا و رسانه |
+از نظر معماری نرم‌افزار، پناه یک **Modular Monolith** است: یک API یگانه Django روی `/api/v1` که به یک SPA فارسی (RTL) خدمت می‌دهد و با PostgreSQL، Redis و Celery پشتیبانی می‌شود.
+
+<p align="center">
+  <img src="DOCS/Diagrams/MindMap_Capabilities.png" alt="نقشه قابلیت‌های سامانه پناه" width="820" />
+</p>
 
 ---
 
@@ -66,25 +67,23 @@
 | حوزه | شرح |
 |------|-----|
 | احراز هویت | ثبت‌نام، ورود JWT، تازه‌سازی توکن، پروفایل |
-| RBAC | نقش‌ها و مجوزهای پایگاه‌داده‌محور (`admin` / `coordinator` / `volunteer`) |
+| RBAC | نقش و مجوز پایگاه‌داده‌محور (`admin` / `coordinator` / `volunteer`) |
 | داوطلبان | پروفایل، مهارت‌ها، تأیید حساب |
-| بحران و مأموریت | ثبت رویداد، انتشار مأموریت، کنترل مرئی‌بودن برای داوطلبان |
-| درخواست و تخصیص | کارتابل درخواست، پذیرش/رد تخصیص، حضور |
-| وظایف تخصیص | چک‌لیست وظیفه روی هر تخصیص (مدیریت توسط هماهنگ‌کننده، گزارش توسط داوطلب) |
-| گزارش و داشبورد | گزارش مأموریت، خلاصه مأموریت پایان‌یافته، شاخص‌های نقش‌محور |
+| بحران و مأموریت | ثبت رویداد، انتشار، کنترل مرئی‌بودن برای داوطلبان |
+| درخواست و تخصیص | کارتابل درخواست، پذیرش/رد، ثبت حضور |
+| وظایف تخصیص | چک‌لیست وظیفه روی تخصیص (مدیریت هماهنگ‌کننده، گزارش داوطلب) |
+| گزارش و داشبورد | گزارش مأموریت، خلاصه مأموریت پایان‌یافته، شاخص نقش‌محور |
 | پشتیبانی | تیکت، اعلان درون‌برنامه‌ای و ایمیل |
-| حسابرسی و عملیات | Audit log، بکاپ خودکار DB/Media، پنل Ops |
+| حسابرسی و Ops | Audit log، بکاپ خودکار DB/Media، پنل عملیات |
 
 ---
 
 ## معماری سامانه
 
-### نمای زمینه (Context)
-
-بازیگران انسانی با سامانه پناه و سرویس‌های بیرونی (ایمیل و …) تعامل دارند:
+### ۱) زمینه سامانه (C4 Context)
 
 <p align="center">
-  <img src="VDOC/images/fig-01-context.png" alt="C4 Context — سامانه پناه" width="720" />
+  <img src="DOCS/Diagrams/C4_Context_Panah.png" alt="C4 Context — پناه" width="820" />
 </p>
 
 ```mermaid
@@ -107,54 +106,53 @@ C4Context
     Rel(panah, smtp, "SMTP")
 ```
 
-### نمای کانتینر (C4 Container)
+### ۲) کانتینرها (C4 Container)
 
 <p align="center">
-  <img src="VDOC/images/fig-02-c4-container.png" alt="C4 Container — سامانه پناه" width="780" />
+  <img src="DOCS/Diagrams/C4_Container_Panah.png" alt="C4 Container — پناه" width="860" />
 </p>
+
+| کانتینر | فناوری | مسئولیت |
+|---------|--------|----------|
+| Frontend | React 19 · Vite · MUI · RTL | رابط کاربری تک‌صفحه‌ای فارسی |
+| Nginx | Alpine | TLS، reverse proxy، static/media |
+| Backend API | Django 5.2 · DRF · JWT · RBAC | قواعد کاری و قرارداد REST |
+| Celery Worker / Beat | Celery | کارهای async و زمان‌بندی‌شده |
+| PostgreSQL 17 | RDBMS | داده تراکنشی |
+| Redis 7 | Cache / Broker | صف، نهانگاه، JWT blacklist |
+| PgAdmin / Mailhog | Dev only | مدیریت DB و inbox ایمیل توسعه |
 
 ```mermaid
 flowchart LR
-    subgraph Clients["Clients"]
-        B["Browser<br/>React SPA · MUI · RTL"]
+    subgraph Clients
+        B["Browser · React SPA"]
     end
-
-    subgraph Edge["Edge"]
-        N["Nginx<br/>TLS · Reverse Proxy · Static/Media"]
+    subgraph Edge
+        N["Nginx · TLS / Proxy"]
     end
-
-    subgraph App["Application"]
-        API["Django + DRF<br/>JWT · RBAC · Domain Services"]
+    subgraph App
+        API["Django + DRF"]
         W["Celery Worker"]
         Beat["Celery Beat"]
     end
-
-    subgraph Data["Data & Messaging"]
+    subgraph Data
         PG[(PostgreSQL 17)]
-        RD[(Redis 7<br/>Cache · Broker · JWT blacklist)]
-    end
-
-    subgraph Dev["Dev utilities"]
-        MH["Mailhog"]
-        PGA["PgAdmin"]
+        RD[(Redis 7)]
     end
 
     B -->|HTTPS| N
-    N -->|/ | B
     N -->|/api/v1| API
     API --> PG
     API --> RD
     Beat --> RD
     RD --> W
     W --> PG
-    W --> MH
-    API -.-> PGA
 ```
 
-### استقرار Docker
+### ۳) استقرار Docker
 
 <p align="center">
-  <img src="VDOC/images/fig-03-docker.png" alt="Docker Compose topology" width="780" />
+  <img src="DOCS/Diagrams/Deployment_Docker.png" alt="توپولوژی Docker Compose" width="860" />
 </p>
 
 | Container | نقش |
@@ -165,10 +163,30 @@ flowchart LR
 | `volunteer-management-celery` / `-beat` | Async + scheduled jobs |
 | `volunteer-management-postgres` | PostgreSQL 17 |
 | `volunteer-management-redis` | Cache / broker / JWT blacklist |
-| `volunteer-management-pgadmin` | DB UI (dev) |
+| `volunteer-management-pgadmin` | DB UI (توسعه) |
 | `volunteer-management-mailhog` | Dev SMTP inbox |
 
-### ماژول‌های دامنه (Backend)
+### ۴) لایه‌های Backend (Clean / Layered)
+
+<p align="center">
+  <img src="DOCS/Diagrams/Layered_Clean_Architecture.png" alt="لایه‌های Backend" width="720" />
+</p>
+
+```text
+API Layer            → views, serializers, urls
+Application Services → use cases / domain services
+Domain Layer         → enums, exceptions, rules
+Infrastructure       → models, repositories
+Cross-cutting        → auth, audit, notifications
+```
+
+### ۵) جریان احراز هویت (JWT)
+
+<p align="center">
+  <img src="DOCS/Diagrams/JWT_Auth_Flow.png" alt="جریان JWT" width="780" />
+</p>
+
+### ۶) ماژول‌های دامنه
 
 ```text
 backend/src/
@@ -182,12 +200,16 @@ backend/src/
 └── ops                         # بکاپ و عملیات
 ```
 
+<p align="center">
+  <img src="DOCS/Diagrams/C4_Component_Backend.png" alt="کامپوننت‌های Backend" width="820" />
+</p>
+
 ---
 
 ## چرخه عمر مأموریت
 
 <p align="center">
-  <img src="VDOC/images/fig-04-mission-states.png" alt="Mission state machine" width="640" />
+  <img src="DOCS/Diagrams/State_Mission_Status.png" alt="ماشین وضعیت مأموریت" width="720" />
 </p>
 
 ```mermaid
@@ -206,7 +228,15 @@ stateDiagram-v2
     cancelled --> [*]
 ```
 
-جریان عملیاتی خلاصه:
+جریان عملیاتی و توالی درخواست:
+
+<p align="center">
+  <img src="DOCS/Diagrams/Activity_Mission_Lifecycle.png" alt="چرخه فعالیت مأموریت" width="780" />
+</p>
+
+<p align="center">
+  <img src="DOCS/Diagrams/Sequence_Mission_Apply_Approve.png" alt="توالی درخواست و تأیید" width="780" />
+</p>
 
 ```mermaid
 flowchart LR
@@ -223,13 +253,17 @@ flowchart LR
 
 ## نقش‌ها و دسترسی
 
+<p align="center">
+  <img src="DOCS/Diagrams/RBAC_Model.png" alt="مدل RBAC" width="720" />
+</p>
+
 | نقش | Slug | دامنه |
 |-----|------|--------|
 | مدیر سامانه | `admin` | کاربران، نقش‌ها، حسابرسی، Ops، دسترسی کامل |
 | هماهنگ‌کننده | `coordinator` | بحران، مأموریت، درخواست، تخصیص، وظایف تخصیص |
 | داوطلب | `volunteer` | پروفایل، درخواست، پذیرش تخصیص، گزارش وضعیت وظیفه |
 
-RBAC در پایگاه داده تعریف می‌شود (نقش + مجوز). جزئیات ماتریس دسترسی در [VDOC/md/02-system-overview.md](VDOC/md/02-system-overview.md).
+ماتریس دسترسی کامل: [VDOC/md/02-system-overview.md](VDOC/md/02-system-overview.md)
 
 ---
 
@@ -243,12 +277,10 @@ RBAC در پایگاه داده تعریف می‌شود (نقش + مجوز). ج
 | Cache / Queue | Redis 7 |
 | Proxy | Nginx |
 | Runtime | Docker Compose |
-| Docs API | OpenAPI / Swagger در `/api/docs/` |
+| API Docs | OpenAPI / Swagger — `/api/docs/` |
 
-قفل وابستگی‌ها:
-
-| Stack | فایل |
-|-------|------|
+| Stack | قفل وابستگی |
+|-------|-------------|
 | Frontend | `frontend/package-lock.json` (`npm ci`) |
 | Backend | `backend/requirements.lock` |
 
@@ -393,16 +425,23 @@ docker compose exec volunteer-management-backend python manage.py seed_data \
 ├── frontend/                # React + MUI
 ├── infrastructure/          # Nginx, Postgres init, scripts
 ├── documentation/           # SDD, ADR, runbooks
-├── VDOC/                    # SRS، دیاگرام‌ها، تصاویر معماری
+├── DOCS/                    # بسته مستندات + دیاگرام‌های معماری
+├── VDOC/                    # SRS و تصاویر تکمیلی
 ├── environment/             # قالب‌های env تولید
-└── database/backups/        # خروجی بکاپ (gitignored محتوا)
+└── database/backups/        # خروجی بکاپ (محتوا gitignored)
 ```
+
+نقشه ناوبری UI:
+
+<p align="center">
+  <img src="DOCS/Diagrams/UI_Navigation_Map.png" alt="نقشه ناوبری UI" width="780" />
+</p>
 
 ---
 
 ## عملیات و بکاپ
 
-- بکاپ شبانه DB (`pg_dump`) + آرشیو `media/` توسط **Celery Beat** (ساعت ۰۲:۰۰ Asia/Tehran)
+- بکاپ شبانه DB (`pg_dump`) + آرشیو `media/` توسط **Celery Beat** (۰۲:۰۰ Asia/Tehran)
 - نگه‌داری پیش‌فرض: ۳۰ روز
 - مسیر آرتیفکت: `./database/backups/`
 - UI: **بکاپ و عملیات** (`/admin/ops`)
@@ -413,7 +452,7 @@ docker compose exec volunteer-management-backend python manage.py seed_data \
 docker compose exec volunteer-management-backend python manage.py backup_now
 ```
 
-جزئیات بازیابی در [documentation/runbooks/deployment.md](documentation/runbooks/deployment.md).
+جزئیات بازیابی: [documentation/runbooks/deployment.md](documentation/runbooks/deployment.md)
 
 ---
 
@@ -425,7 +464,7 @@ cp environment/.env.production.example .env
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-Runbook کامل: [documentation/runbooks/deployment.md](documentation/runbooks/deployment.md).
+Runbook کامل: [documentation/runbooks/deployment.md](documentation/runbooks/deployment.md)
 
 ---
 
@@ -446,13 +485,20 @@ Runbook کامل: [documentation/runbooks/deployment.md](documentation/runbooks/
 
 | سند | مسیر |
 |-----|------|
+| دیاگرام‌های معماری | [DOCS/Diagrams/](DOCS/Diagrams/) |
+| بسته مستندات پروژه | [DOCS/](DOCS/) |
 | SRS / مشخصات | [VDOC/md/](VDOC/md/) |
-| دیاگرام‌ها | [VDOC/diagrams/](VDOC/diagrams/) |
 | Software Design Document | [documentation/architecture/SDD.md](documentation/architecture/SDD.md) |
 | API Contracts | [documentation/architecture/api-contracts.md](documentation/architecture/api-contracts.md) |
 | Deployment Runbook | [documentation/runbooks/deployment.md](documentation/runbooks/deployment.md) |
 | طراحی داده (P21) | [P21.md](P21.md) |
 | معماری فاز ۳ (P31) | [P31.md](P31.md) |
+
+مدل داده منطقی:
+
+<p align="center">
+  <img src="DOCS/Diagrams/ERD_Logical_Core.png" alt="ERD منطقی" width="820" />
+</p>
 
 ---
 
