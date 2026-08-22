@@ -67,7 +67,7 @@ export default function MyMissionsPage() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} gutterBottom>
+      <Typography variant="h4" fontWeight={700} gutterBottom data-tour="page-my-missions-header">
         {t('nav.myMissions')}
       </Typography>
 

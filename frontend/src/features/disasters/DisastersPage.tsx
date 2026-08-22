@@ -220,6 +220,7 @@ export default function DisastersPage() {
         alignItems={{ xs: 'stretch', sm: 'center' }}
         spacing={2}
         sx={{ mb: 3 }}
+        data-tour="page-disasters-header"
       >
         <Box>
           <Typography variant="h4" fontWeight={800} gutterBottom>

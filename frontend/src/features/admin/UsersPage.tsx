@@ -338,6 +338,7 @@ export default function UsersPage() {
         justifyContent="space-between"
         spacing={2}
         sx={{ mb: 2.5 }}
+        data-tour="page-users-header"
       >
         <Box>
           <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 0.5 }}>

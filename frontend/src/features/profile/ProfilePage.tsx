@@ -397,7 +397,7 @@ export default function ProfilePage() {
 
   return (
     <Box sx={{ maxWidth: 960, mx: 'auto', pb: 10, width: '100%' }}>
-      <Typography variant="h4" fontWeight={800} gutterBottom>
+      <Typography variant="h4" fontWeight={800} gutterBottom data-tour="page-profile-header">
         {t('title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
