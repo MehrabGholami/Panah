@@ -196,6 +196,7 @@ export default function CoordinatorMyMissionsPage() {
         justifyContent="space-between"
         spacing={1.5}
         sx={{ mb: 2.5 }}
+        data-tour="page-coordinator-missions-header"
       >
         <Box>
           <Stack direction="row" alignItems="center" spacing={1.25}>

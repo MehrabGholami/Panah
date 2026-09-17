@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   resolve: {
     alias: {
@@ -24,15 +24,29 @@ export default defineConfig({
       usePolling: true,
       interval: 1000,
     },
-    proxy: {
-      '/api': {
-        target: process.env.VITE_PROXY_TARGET || 'http://localhost:8000',
-        changeOrigin: true,
+    // In development only: proxy /api to local backend (Docker or localhost)
+    ...(mode === 'development' && {
+      proxy: {
+        '/api': {
+          target: process.env.VITE_PROXY_TARGET || 'http://localhost:8000',
+          changeOrigin: true,
+        },
       },
-    },
+    }),
   },
   build: {
     outDir: 'dist',
     sourcemap: false,
+    // Improve chunk splitting for better caching
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          mui: ['@mui/material', '@mui/icons-material'],
+          charts: ['recharts'],
+          maps: ['leaflet', 'react-leaflet'],
+        },
+      },
+    },
   },
-});
+}));

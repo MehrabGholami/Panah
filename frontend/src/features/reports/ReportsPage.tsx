@@ -317,6 +317,7 @@ export default function ReportsPage() {
         justifyContent="space-between"
         spacing={2}
         sx={{ mb: 2.5 }}
+        data-tour="page-reports-header"
       >
         <Box>
           <Typography variant="h4" fontWeight={800} gutterBottom>

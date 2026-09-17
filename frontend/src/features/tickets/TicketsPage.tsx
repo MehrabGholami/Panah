@@ -110,6 +110,7 @@ export default function TicketsPage() {
         alignItems={{ xs: 'stretch', sm: 'center' }}
         spacing={1.5}
         sx={{ mb: 2.5 }}
+        data-tour="page-tickets-header"
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Box

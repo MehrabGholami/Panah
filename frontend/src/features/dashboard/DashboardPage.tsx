@@ -477,7 +477,7 @@ export default function DashboardPage() {
 
   if (isCoordinatorDashboard) {
     return (
-      <Box>
+      <Box data-tour="dashboard-overview">
         <GlassCard
           sx={{
             p: { xs: 2.5, md: 3 },
@@ -493,6 +493,7 @@ export default function DashboardPage() {
             justifyContent="space-between"
             alignItems={{ xs: 'stretch', md: 'center' }}
             spacing={2}
+            data-tour="page-dashboard-header"
           >
             <Box>
               <Typography variant="h4" fontWeight={800} gutterBottom>
@@ -650,7 +651,7 @@ export default function DashboardPage() {
 
   if (isVolunteerDashboard) {
     return (
-      <Box>
+      <Box data-tour="dashboard-overview">
         <GlassCard
           sx={{
             p: { xs: 2.5, md: 3 },
@@ -666,6 +667,7 @@ export default function DashboardPage() {
             justifyContent="space-between"
             alignItems={{ xs: 'stretch', md: 'center' }}
             spacing={2}
+            data-tour="page-dashboard-header"
           >
             <Box>
               <Typography variant="h4" fontWeight={800} gutterBottom>
@@ -818,13 +820,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <Box>
+    <Box data-tour="dashboard-overview">
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         justifyContent="space-between"
         alignItems={{ xs: 'flex-start', md: 'center' }}
         spacing={1.5}
         sx={{ mb: 3 }}
+        data-tour="page-dashboard-header"
       >
         <Box>
           <Typography variant="h4" fontWeight={800} gutterBottom>

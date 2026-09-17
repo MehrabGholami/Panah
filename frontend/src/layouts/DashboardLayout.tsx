@@ -13,6 +13,7 @@ import BackupOutlinedIcon from '@mui/icons-material/BackupOutlined';
 import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import HelpOutlineRoundedIcon from '@mui/icons-material/HelpOutlineRounded';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -40,15 +41,22 @@ import {
   useMediaQuery,
   useTheme,
   type Theme,
+  keyframes,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link as RouterLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/app/store';
 import { logout } from '@/app/slices/authSlice';
 import { toggleSidebar } from '@/app/slices/uiPreferencesSlice';
 import panahLogo from '@/assets/images/panah-logo.png';
+import {
+  OnboardingProvider,
+  OnboardingTour,
+  pathToTourSlug,
+  useOnboarding,
+} from '@/features/onboarding';
 import { apiClient } from '@/shared/api/axios';
 import { endpoints } from '@/shared/api/endpoints';
 import { ThemeToggle, UserAvatar } from '@/shared/components/ui';
@@ -58,6 +66,12 @@ import type { UnreadCountResponse } from '@/shared/types';
 const SIDEBAR_WIDTH = 272;
 const SIDEBAR_COLLAPSED = 72;
 const APP_BAR_HEIGHT = 72;
+
+const guidePulse = keyframes`
+  0% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba(34, 211, 238, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+`;
 
 const sidebarTransition = (theme: Theme) =>
   theme.transitions.create(['width', 'margin', 'margin-left', 'padding', 'min-width', 'max-width'], {
@@ -86,6 +100,14 @@ const roleMeta: Record<string, { label: string; color: string; bg: string }> = {
 };
 
 export function DashboardLayout() {
+  return (
+    <OnboardingProvider>
+      <DashboardLayoutInner />
+    </OnboardingProvider>
+  );
+}
+
+function DashboardLayoutInner() {
   const { t } = useTranslation('common');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -97,6 +119,19 @@ export function DashboardLayout() {
   const { hasPermission, hasAnyRole } = usePermissions();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const { showPulse, startTour, setGuideAnchorEl, registerMobileDrawerControl } = useOnboarding();
+
+  const guideItemRef = useCallback(
+    (node: HTMLElement | null) => {
+      setGuideAnchorEl(node);
+    },
+    [setGuideAnchorEl],
+  );
+
+  useEffect(() => {
+    registerMobileDrawerControl(setMobileOpen);
+    return () => registerMobileDrawerControl(null);
+  }, [registerMobileDrawerControl]);
 
   const { data: unreadData } = useQuery({
     queryKey: ['notifications', 'unread-count'],
@@ -254,7 +289,12 @@ export function DashboardLayout() {
     }
   };
 
-  const sidebarHeader = (
+  const handleGuideClick = () => {
+    setMobileOpen(false);
+    startTour();
+  };
+
+  const renderSidebarHeader = () => (
     <Box
       sx={{
         px: 2,
@@ -342,10 +382,69 @@ export function DashboardLayout() {
 
   const navPaths = visibleNav.map((item) => item.path);
 
-  const sidebar = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
-      {sidebarHeader}
-      <List sx={{ flex: 1, px: 1, py: 1.5, overflowY: 'auto' }}>
+  const renderGuideButton = (tourAnchor: boolean) => (
+    <ListItemButton
+      data-tour="nav-guide"
+      ref={tourAnchor ? guideItemRef : undefined}
+      onClick={handleGuideClick}
+      sx={{
+        borderRadius: 2,
+        mb: 0.5,
+        px: isCollapsedDesktop ? 1.25 : 1.5,
+        py: 1,
+        justifyContent: isCollapsedDesktop ? 'center' : 'flex-start',
+        transition: sidebarTransition(theme),
+        animation: showPulse ? `${guidePulse} 2.4s ease-out infinite` : 'none',
+        bgcolor: showPulse ? 'rgba(34, 211, 238, 0.08)' : undefined,
+        '&:hover': {
+          bgcolor: 'rgba(34, 211, 238, 0.08)',
+        },
+      }}
+    >
+      <ListItemIcon
+        sx={{
+          minWidth: isCollapsedDesktop ? 0 : 40,
+          color: showPulse ? 'primary.main' : 'text.secondary',
+          justifyContent: 'center',
+          transition: sidebarTransition(theme),
+        }}
+      >
+        <HelpOutlineRoundedIcon />
+      </ListItemIcon>
+      <ListItemText
+        primary={t('nav.guide')}
+        sx={{
+          m: 0,
+          opacity: isCollapsedDesktop ? 0 : 1,
+          maxWidth: isCollapsedDesktop ? 0 : 200,
+          overflow: 'hidden',
+          transition: fadeTransition(theme),
+        }}
+        primaryTypographyProps={{
+          fontWeight: showPulse ? 700 : 500,
+          fontSize: '0.9rem',
+          noWrap: true,
+        }}
+      />
+      {showPulse && !isCollapsedDesktop && (
+        <Chip
+          label={t('onboarding.newBadge')}
+          size="small"
+          color="primary"
+          sx={{ height: 22, fontSize: '0.7rem', fontWeight: 700 }}
+        />
+      )}
+    </ListItemButton>
+  );
+
+  /** Must be a fresh tree per Drawer — reusing one element mounts into the hidden modal drawer. */
+  const renderSidebar = (variant: 'mobile' | 'desktop') => (
+    <Box
+      data-tour-drawer={variant}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}
+    >
+      {renderSidebarHeader()}
+      <List data-tour="nav-rail" sx={{ flex: 1, px: 1, py: 1.5, overflowY: 'auto' }}>
         {visibleNav.map((item) => {
           const pathname = location.pathname;
           const exact = pathname === item.path;
@@ -360,11 +459,13 @@ export function DashboardLayout() {
               )
             : false;
           const active = exact || (nested && !hasMoreSpecificMatch);
+          const tourAttr = `nav-${pathToTourSlug(item.path)}`;
           const button = (
             <ListItemButton
-              key={item.path}
+              key={`${variant}-${item.path}`}
               component={RouterLink}
               to={item.path}
+              data-tour={tourAttr}
               selected={active}
               onClick={() => setMobileOpen(false)}
               sx={{
@@ -417,7 +518,7 @@ export function DashboardLayout() {
 
           return (
             <Tooltip
-              key={item.path}
+              key={`${variant}-${item.path}`}
               title={isCollapsedDesktop ? item.label : ''}
               placement="right"
               disableHoverListener={!isCollapsedDesktop}
@@ -427,6 +528,14 @@ export function DashboardLayout() {
             </Tooltip>
           );
         })}
+        <Tooltip
+          title={isCollapsedDesktop ? t('nav.guide') : ''}
+          placement="right"
+          disableHoverListener={!isCollapsedDesktop}
+          disableFocusListener={!isCollapsedDesktop}
+        >
+          {renderGuideButton(variant === (isMobile ? 'mobile' : 'desktop'))}
+        </Tooltip>
       </List>
       <Box sx={{ p: 1.5, borderTop: 1, borderColor: 'divider' }}>
         {showProfileNav && (
@@ -434,6 +543,7 @@ export function DashboardLayout() {
             <ListItemButton
               component={RouterLink}
               to="/profile"
+              data-tour="nav-profile"
               selected={location.pathname.startsWith('/profile')}
               onClick={() => setMobileOpen(false)}
               sx={{
@@ -478,27 +588,20 @@ export function DashboardLayout() {
             startIcon={<LogoutIcon />}
             sx={{
               borderRadius: 2,
-              py: 1.1,
-              minWidth: isCollapsedDesktop ? 48 : undefined,
-              px: isCollapsedDesktop ? 0 : 2,
-              boxShadow: '0 4px 14px rgba(239, 68, 68, 0.25)',
-              transition: sidebarTransition(theme),
+              justifyContent: isCollapsedDesktop ? 'center' : 'flex-start',
+              minWidth: 0,
+              px: isCollapsedDesktop ? 1.25 : 2,
               '& .MuiButton-startIcon': {
-                margin: isCollapsedDesktop ? 0 : undefined,
-                transition: fadeTransition(theme),
-              },
-              '&:hover': {
-                boxShadow: '0 6px 18px rgba(239, 68, 68, 0.35)',
+                m: isCollapsedDesktop ? 0 : undefined,
               },
             }}
           >
             <Box
               component="span"
               sx={{
-                display: 'inline-block',
-                overflow: 'hidden',
-                maxWidth: isCollapsedDesktop ? 0 : 120,
                 opacity: isCollapsedDesktop ? 0 : 1,
+                maxWidth: isCollapsedDesktop ? 0 : 200,
+                overflow: 'hidden',
                 transition: fadeTransition(theme),
                 whiteSpace: 'nowrap',
               }}
@@ -513,6 +616,7 @@ export function DashboardLayout() {
 
   return (
     <Box
+      data-tour="app-shell"
       sx={{
         display: 'flex',
         flexDirection: 'row',
@@ -544,7 +648,7 @@ export function DashboardLayout() {
             },
           }}
         >
-          {sidebar}
+          {renderSidebar('mobile')}
         </Drawer>
         <Drawer
           variant="permanent"
@@ -562,7 +666,7 @@ export function DashboardLayout() {
             },
           }}
         >
-          {sidebar}
+          {renderSidebar('desktop')}
         </Drawer>
       </Box>
 
@@ -607,6 +711,7 @@ export function DashboardLayout() {
           <IconButton
             component={RouterLink}
             to="/notifications"
+            data-tour="notifications-bell"
             color="inherit"
             aria-label={t('nav.notifications')}
             sx={{ mx: 1 }}
@@ -687,6 +792,8 @@ export function DashboardLayout() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <OnboardingTour />
     </Box>
   );
 }

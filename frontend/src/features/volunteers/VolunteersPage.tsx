@@ -7,12 +7,14 @@ export default function VolunteersPage() {
 
   return (
     <Box>
-      <Typography variant="h4" fontWeight={700} gutterBottom>
-        {t('title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        {t('subtitle')}
-      </Typography>
+      <Box data-tour="page-applications-header" sx={{ mb: 0.5 }}>
+        <Typography variant="h4" fontWeight={700} gutterBottom>
+          {t('title')}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          {t('subtitle')}
+        </Typography>
+      </Box>
       <MissionApplicationsTab />
     </Box>
   );

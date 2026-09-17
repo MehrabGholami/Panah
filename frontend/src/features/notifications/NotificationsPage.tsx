@@ -219,6 +219,7 @@ export default function NotificationsPage() {
         alignItems={{ xs: 'stretch', sm: 'center' }}
         spacing={1.5}
         sx={{ mb: 2.5 }}
+        data-tour="page-notifications-header"
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box

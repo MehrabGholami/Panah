@@ -186,15 +186,17 @@ export default function AvailableMissionsPage() {
 
   return (
     <Box>
-      <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 0.5 }}>
-        <AssignmentOutlinedIcon color="primary" />
-        <Typography variant="h4" fontWeight={800}>
-          {t('availableTitle')}
+      <Box data-tour="page-available-missions-header" sx={{ mb: 2.5 }}>
+        <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 0.5 }}>
+          <AssignmentOutlinedIcon color="primary" />
+          <Typography variant="h4" fontWeight={800}>
+            {t('availableTitle')}
+          </Typography>
+        </Stack>
+        <Typography variant="body2" color="text.secondary">
+          {t('availableSubtitle')}
         </Typography>
-      </Stack>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-        {t('availableSubtitle')}
-      </Typography>
+      </Box>
 
       {feedback && (
         <Alert severity={feedback.type} sx={{ mb: 2 }} onClose={() => setFeedback(null)}>

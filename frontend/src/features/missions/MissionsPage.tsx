@@ -295,6 +295,7 @@ export default function MissionsPage() {
         justifyContent="space-between"
         spacing={1.5}
         sx={{ mb: 2.5 }}
+        data-tour="page-missions-header"
       >
         <Box>
           <Stack direction="row" alignItems="center" spacing={1.25}>
