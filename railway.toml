@@ -1,0 +1,14 @@
+# Railway deployment configuration for Panah Backend (Django)
+# https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+numReplicas = 1
+startCommand = "cd /app && python src/manage.py migrate --noinput && python src/manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --chdir src config.wsgi:application"
+healthcheckPath = "/health/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
